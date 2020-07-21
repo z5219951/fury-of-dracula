@@ -57,7 +57,6 @@ GameView GvNew(char *pastPlays, Message messages[])
         new->Path[index] = strtok(NULL,delim);
     }
 	new->num = index;
-	printf("%s\n", new->Path[index-1]);
 	return new;
 }
 
