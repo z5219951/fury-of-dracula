@@ -19,11 +19,13 @@
 #include "Map.h"
 #include "Places.h"
 // add your own #includes here
-
+#include<string.h>
 // TODO: ADD YOUR OWN STRUCTS HERE
 
 struct gameView {
 	// TODO: ADD FIELDS HERE
+	char **Path;
+	int num;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -37,13 +39,32 @@ GameView GvNew(char *pastPlays, Message messages[])
 		fprintf(stderr, "Couldn't allocate GameView!\n");
 		exit(EXIT_FAILURE);
 	}
+	char delim[2] = " "; 
 
+    char cp[strlen(pastPlays)+1];
+    strcpy(cp, pastPlays);
+
+    int len = strlen(pastPlays);
+    new->Path = malloc(sizeof(char)*len+1);
+    for (int i = 0; i < len; i++) {
+        new->Path[i] = malloc(sizeof(char)*8);
+    }
+    int index = 0;
+    new->Path[index]  = strtok(cp,delim);
+    while (new->Path[index]!= NULL)
+    {
+        index++;
+        new->Path[index] = strtok(NULL,delim);
+    }
+	new->num = index;
+	printf("%s\n", new->Path[index-1]);
 	return new;
 }
 
 void GvFree(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+	free(gv->Path);
 	free(gv);
 }
 

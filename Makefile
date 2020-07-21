@@ -34,6 +34,9 @@ HunterView.o: HunterView.c HunterView.h Game.h
 DraculaView.o: DraculaView.c DraculaView.h Game.h
 testUtils.o: testUtils.c Places.h Game.h
 
+yuetest: yuetest.o testUtils.o GameView.o Map.o Places.o
+testGameView.o: yuetest.c GameView.h Map.h Places.h Game.h
+
 .PHONY: clean
 clean:
 	-rm -f ${BINS} *.o core
