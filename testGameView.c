@@ -469,7 +469,7 @@ int main(void)
 			assert(numLocs == 7);
 			sortPlaces(locs, numLocs);
 			assert(locs[0] == BORDEAUX);
-			assert(locs[1] == BUCHAREST);
+			assert(locs[1] == BRUSSELS);
 			assert(locs[2] == COLOGNE);
 			assert(locs[3] == LE_HAVRE);
 			assert(locs[4] == MARSEILLES);
