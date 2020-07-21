@@ -55,3 +55,8 @@ dkms.conf
 yuetest*
 # test file
 test2.txt
+
+testDraculaView
+testGameView
+testHunterView
+testMap
