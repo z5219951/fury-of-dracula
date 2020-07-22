@@ -161,6 +161,17 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
                         PlaceId from, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+	int *Place;
+	// if player is Dracula
+	if (player == 4) {
+		if (round == 1) {
+			*numReturnedLocs = 
+		}
+	} else {
+		if (round == 1) {
+			*numReturnedLocs =
+		}
+	}
 	*numReturnedLocs = 0;
 	return NULL;
 }
