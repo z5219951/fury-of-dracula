@@ -128,8 +128,9 @@ PlaceId GvGetVampireLocation(GameView gv)
 	if (gv == NULL || gv-> num) {
 		return NULL;
 	}
-	// Player currp = GvGetPlayer(gv);
-	
+	int round = GvGetRound(gv);
+	int player = GvGetPlayer(gv);
+	// scan through last 6 rounds
 	
 	return NOWHERE;
 }
@@ -138,10 +139,9 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numTraps = 0;
-
-	// if (GvGetPlayer(gv) == PLAYER_DRACULA) {
-
-	// }
+	int round = GvGetRound(gv);
+	int player = GvGetPlayer(gv);
+	// scan through last 6 rounds
 
 	return NULL;
 }
