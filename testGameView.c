@@ -489,9 +489,89 @@ int main(void)
 			assert(locs[0] == ATHENS);
 			free(locs);
 		}
-
+		
 		GvFree(gv);
 		printf("Test passed!\n");
+	}
+
+	{///////////////////////////////////////////////////////////////////
+		printf("Additional test for Game History Part");
+		
+		{
+			// for empty trail
+			char *trail ="";
+			
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			
+			//test GvGetMoveHistory
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetMoveHistory(gv, PLAYER_LORD_GODALMING,&numMoves, &canFree); 
+				assert(moves == NULL);
+				assert(numMoves == 0);
+				if (canFree) free(moves);
+			}
+
+			//test GvGetLastMoves
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastMoves(gv, PLAYER_LORD_GODALMING,10,&numMoves, &canFree); 
+				assert(moves == NULL);
+				assert(numMoves == 0);
+				if (canFree) free(moves);
+			}
+		}
+
+		{
+			//test GvGetLastMoves
+			char *trail =
+				"GLS.... SGE.... HGE.... MGE.... DST.V.. "
+				"GCA.... SGE.... HGE.... MGE.... DC?T... "
+				"GGR.... SGE.... HGE.... MGE.... DC?T... "
+				"GAL.... SGE.... HGE.... MGE.... DD3T... "
+				"GSR.... SGE.... HGE.... MGE.... DHIT... "
+				"GSN.... SGE.... HGE.... MGE.... DC?T... "
+				"GMA.... SSTTTV.";
+			
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+
+
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastMoves(gv, PLAYER_LORD_GODALMING,1,&numMoves, &canFree); 
+				assert(numMoves == 1);
+				assert(moves[0] == MADRID);
+				if (canFree) free(moves);
+			}
+			
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastMoves(gv, PLAYER_LORD_GODALMING,10,&numMoves, &canFree); 
+				assert(numMoves == 7);
+				assert(moves[0] == LISBON);
+				assert(moves[1] == CADIZ);
+				assert(moves[2] == GRANADA);
+				assert(moves[3] == ALICANTE);
+				assert(moves[4] == SARAGOSSA);
+				assert(moves[5] == SANTANDER);
+				assert(moves[6] == MADRID);
+			}
+
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastMoves(gv, PLAYER_LORD_GODALMING,7,&numMoves, &canFree); 
+				assert(numMoves == 7);
+				assert(moves[0] == LISBON);
+				assert(moves[1] == CADIZ);
+				assert(moves[2] == GRANADA);
+				assert(moves[3] == ALICANTE);
+				assert(moves[4] == SARAGOSSA);
+				assert(moves[5] == SANTANDER);
+				assert(moves[6] == MADRID);
+			}
+		}
 	}
 
 	return EXIT_SUCCESS;

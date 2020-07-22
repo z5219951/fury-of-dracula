@@ -129,28 +129,85 @@ PlaceId *GvGetMoveHistory(GameView gv, Player player,
 	}
 	int maxLen = gv->num/5+1*(gv->num%5 > 0);
 	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+	// record the move
+	int totalNum = 0;
+	// record place
+	char collect[maxLen][3];
 	for (int i = player; i < gv->num;  i+=5) {
-		printf("%s\n", gv->Path[i]);
+		collect[totalNum][0] = gv->Path[i][1];
+		collect[totalNum][1] = gv->Path[i][2];
+		collect[totalNum][2] = '\0';
+		totalNum++;
 	}
+	// change the reord into placeid
+	for (int i = 0; i < totalNum; i++) {
+		result[i] = placeAbbrevToId(collect[i]);
+	}
+	*numReturnedMoves = totalNum;
+	*canFree = true;
 	return result;
 }
 
 PlaceId *GvGetLastMoves(GameView gv, Player player, int numMoves,
                         int *numReturnedMoves, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedMoves = 0;
-	*canFree = false;
-	return NULL;
+	*canFree = true;
+	// check the gv is not null
+	if (gv == NULL || gv->num == 0) {
+		return NULL;
+	}
+	int maxLen = gv->num/5+1*(gv->num%5 > 0);
+	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+	// record the move
+	int totalNum = 0;
+	// record place
+	char collect[maxLen][3];
+	for (int i = player; i < gv->num;  i+=5) {
+		collect[totalNum][0] = gv->Path[i][1];
+		collect[totalNum][1] = gv->Path[i][2];
+		collect[totalNum][2] = '\0';
+		totalNum++;
+	}
+	*numReturnedMoves = totalNum;
+	// change the reord into placeid
+	int startPoint = 0;
+	if (totalNum > numMoves) {
+		startPoint = totalNum - numMoves;
+		*numReturnedMoves = numMoves;
+	}
+	for (int i = 0; i < totalNum; i++) {
+		result[i] = placeAbbrevToId(collect[startPoint]);
+		startPoint++;
+	}
+	return result;
 }
 
 PlaceId *GvGetLocationHistory(GameView gv, Player player,
                               int *numReturnedLocs, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedLocs = 0;
 	*canFree = false;
-	return NULL;
+	// check the gv is not null
+	if (gv == NULL || gv->num == 0) {
+		return NULL;
+	}
+	PlaceId *result;
+	// there is no differences between GvGetLocationHistory and GvGetMoveHistory
+	// when hunter player use this function.
+	result = GvGetMoveHistory(gv, player, numReturnedLocs, canFree);
+	if (player == PLAYER_DRACULA) {
+		for (int i = 0; i < *numReturnedLocs; i++) {
+			if (DOUBLE_BACK_1 <= result[i] && DOUBLE_BACK_5>= result[i]) {
+				int back = result[i] - DOUBLE_BACK_1 + 1;
+				result[i] = result[i-back];
+			}
+			if (HIDE == result[i]) {
+				result[i] = result[i-1];
+			}
+		}
+	}
+	return result;
 }
 
 PlaceId *GvGetLastLocations(GameView gv, Player player, int numLocs,
