@@ -105,7 +105,7 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 	}
 	int health = GvGetHealth(gv, player);
 	if (health == 0) {
-		return placeNameToId(ST_JOSEPH_AND_ST_MARY);
+		return HOSPITAL_PLACE;
 	}
 	int numReturnedLocs; 
 	bool canFree;
@@ -138,6 +138,11 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numTraps = 0;
+
+	// if (GvGetPlayer(gv) == PLAYER_DRACULA) {
+
+	// }
+
 	return NULL;
 }
 
