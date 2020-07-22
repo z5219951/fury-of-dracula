@@ -99,7 +99,22 @@ int GvGetHealth(GameView gv, Player player)
 PlaceId GvGetPlayerLocation(GameView gv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return NOWHERE;
+	// check gv is not NULL
+	if (gv == NULL || gv-> num) {
+		return NULL;
+	}
+	int numReturnedLocs; 
+	bool canFree;
+	PlaceId *result; 
+	result = GvGetLastLocations(gv, player, 1, &numReturnedLocs, &canFree); 
+	PlaceId location = result[0];
+	if (canFree == 1) { // free array
+		free(result);
+	}
+	if (numReturnedLocs == 0) { // if player has not had a turn yet
+		return NOWHERE; 
+	}
+	return location;
 }
 
 PlaceId GvGetVampireLocation(GameView gv)
