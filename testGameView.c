@@ -521,6 +521,15 @@ int main(void)
 				assert(numMoves == 0);
 				if (canFree) free(moves);
 			}
+
+			// test GvGetLocationHistory
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLocationHistory(gv, PLAYER_LORD_GODALMING,&numMoves, &canFree); 
+				assert(moves == NULL);
+				assert(numMoves == 0);
+				if (canFree) free(moves);
+			}
 		}
 
 		{
@@ -543,6 +552,14 @@ int main(void)
 				PlaceId *moves = GvGetLastMoves(gv, PLAYER_LORD_GODALMING,1,&numMoves, &canFree); 
 				assert(numMoves == 1);
 				assert(moves[0] == MADRID);
+				if (canFree) free(moves);
+			}
+
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastMoves(gv, PLAYER_LORD_GODALMING,0,&numMoves, &canFree); 
+				assert(numMoves == 0);
+				assert(moves == NULL);
 				if (canFree) free(moves);
 			}
 			
@@ -570,6 +587,108 @@ int main(void)
 				assert(moves[4] == SARAGOSSA);
 				assert(moves[5] == SANTANDER);
 				assert(moves[6] == MADRID);
+			}
+		}
+
+		{
+			// test GvGetLocationHistory
+			char *trail =
+				"GLS.... SGE.... HGE.... MGE.... DST.V.. "
+				"GCA.... SGE.... HGE.... MGE.... DC?T... "
+				"GGR.... SGE.... HGE.... MGE.... DC?T... "
+				"GAL.... SGE.... HGE.... MGE.... DD2T... "
+				"GSR.... SGE.... HGE.... MGE.... DHIT... "
+				"GSN.... SGE.... HGE.... MGE.... DC?T... "
+				"GMA.... SSTTTV.";
+			
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			int numLocs = 0; bool canFree = false;
+			PlaceId *locs = GvGetLocationHistory(gv, PLAYER_DRACULA,
+			                                     &numLocs, &canFree);
+			assert(numLocs == 6);
+			assert(locs[0] == STRASBOURG);
+			assert(locs[1] == CITY_UNKNOWN);
+			assert(locs[2] == CITY_UNKNOWN);
+			assert(locs[3] == CITY_UNKNOWN);
+			assert(locs[4] == CITY_UNKNOWN);
+			assert(locs[5] == CITY_UNKNOWN);
+			if (canFree) free(locs);
+		}
+
+		{
+			//test GvGetLastLocations
+			char *trail =
+				"GLS.... SGE.... HGE.... MGE.... DST.V.. "
+				"GCA.... SGE.... HGE.... MGE.... DC?T... "
+				"GGR.... SGE.... HGE.... MGE.... DC?T... "
+				"GAL.... SGE.... HGE.... MGE.... DD3T... "
+				"GSR.... SGE.... HGE.... MGE.... DHIT... "
+				"GSN.... SGE.... HGE.... MGE.... DC?T... "
+				"GMA.... SSTTTV.";
+			
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+
+			// test Hunter
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastLocations(gv, PLAYER_LORD_GODALMING,1,&numMoves, &canFree); 
+				assert(numMoves == 1);
+				assert(moves[0] == MADRID);
+				if (canFree) free(moves);
+			}
+
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastLocations(gv, PLAYER_LORD_GODALMING,0,&numMoves, &canFree); 
+				assert(numMoves == 0);
+				assert(moves == NULL);
+				if (canFree) free(moves);
+			}
+			
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastLocations(gv, PLAYER_LORD_GODALMING,10,&numMoves, &canFree); 
+				assert(numMoves == 7);
+				assert(moves[0] == LISBON);
+				assert(moves[1] == CADIZ);
+				assert(moves[2] == GRANADA);
+				assert(moves[3] == ALICANTE);
+				assert(moves[4] == SARAGOSSA);
+				assert(moves[5] == SANTANDER);
+				assert(moves[6] == MADRID);
+			}
+
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastLocations(gv, PLAYER_LORD_GODALMING,7,&numMoves, &canFree); 
+				assert(numMoves == 7);
+				assert(moves[0] == LISBON);
+				assert(moves[1] == CADIZ);
+				assert(moves[2] == GRANADA);
+				assert(moves[3] == ALICANTE);
+				assert(moves[4] == SARAGOSSA);
+				assert(moves[5] == SANTANDER);
+				assert(moves[6] == MADRID);
+			}
+
+			// test Dracula
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastLocations(gv, PLAYER_DRACULA,1,&numMoves, &canFree); 
+				assert(numMoves == 1);
+				assert(moves[0] == CITY_UNKNOWN);
+				if (canFree) free(moves);
+			}
+
+			{
+				int numMoves = 0; bool canFree = false;
+				PlaceId *moves = GvGetLastLocations(gv, PLAYER_DRACULA,2,&numMoves, &canFree); 
+				assert(numMoves == 2);
+				assert(moves[0] == STRASBOURG);
+				assert(moves[1] == CITY_UNKNOWN);
+				if (canFree) free(moves);
 			}
 		}
 	}

@@ -154,7 +154,8 @@ PlaceId *GvGetLastMoves(GameView gv, Player player, int numMoves,
 	*numReturnedMoves = 0;
 	*canFree = true;
 	// check the gv is not null
-	if (gv == NULL || gv->num == 0) {
+	// return NULL if numMoves =0 
+	if (gv == NULL || gv->num == 0 || numMoves == 0) {
 		return NULL;
 	}
 	int maxLen = gv->num/5+1*(gv->num%5 > 0);
@@ -176,7 +177,7 @@ PlaceId *GvGetLastMoves(GameView gv, Player player, int numMoves,
 		startPoint = totalNum - numMoves;
 		*numReturnedMoves = numMoves;
 	}
-	for (int i = 0; i < totalNum; i++) {
+	for (int i = 0; i < totalNum && startPoint < maxLen; i++) {
 		result[i] = placeAbbrevToId(collect[startPoint]);
 		startPoint++;
 	}
@@ -196,6 +197,8 @@ PlaceId *GvGetLocationHistory(GameView gv, Player player,
 	// there is no differences between GvGetLocationHistory and GvGetMoveHistory
 	// when hunter player use this function.
 	result = GvGetMoveHistory(gv, player, numReturnedLocs, canFree);
+
+	//modify the result when DRACULA
 	if (player == PLAYER_DRACULA) {
 		for (int i = 0; i < *numReturnedLocs; i++) {
 			if (DOUBLE_BACK_1 <= result[i] && DOUBLE_BACK_5>= result[i]) {
@@ -213,10 +216,27 @@ PlaceId *GvGetLocationHistory(GameView gv, Player player,
 PlaceId *GvGetLastLocations(GameView gv, Player player, int numLocs,
                             int *numReturnedLocs, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedLocs = 0;
 	*canFree = false;
-	return 0;
+	// check the gv is not null
+	// return NULL if numLocs =0 
+	if (gv == NULL || gv->num == 0 || numLocs == 0) {
+		return NULL;
+	}
+	// get result from GvGetLocationHistory
+	PlaceId *result = GvGetLocationHistory(gv, player, numReturnedLocs, canFree);
+	// change the reord into placeid
+	int totalNum = *numReturnedLocs;
+	int startPoint = 0;
+	if (totalNum > numLocs) {
+		startPoint = totalNum - numLocs;
+		*numReturnedLocs = numLocs;
+	}
+	for (int i = 0; i < totalNum && startPoint < totalNum; i++) {
+		result[i] = result[startPoint];
+		startPoint++;
+	}
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
