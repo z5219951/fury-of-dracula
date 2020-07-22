@@ -34,7 +34,7 @@ struct gameView {
 GameView GvNew(char *pastPlays, Message messages[])
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	GameView new = malloc(sizeof(*new));
+	GameView new = malloc(sizeof(GameView));
 	if (new == NULL) {
 		fprintf(stderr, "Couldn't allocate GameView!\n");
 		exit(EXIT_FAILURE);
@@ -44,17 +44,19 @@ GameView GvNew(char *pastPlays, Message messages[])
     char cp[strlen(pastPlays)+1];
     strcpy(cp, pastPlays);
 
-    int len = strlen(pastPlays);
-    new->Path = malloc(sizeof(char)*len+1);
+    int len = (strlen(pastPlays)+1)/8;
+    new->Path = malloc(sizeof(char *)*len);
     for (int i = 0; i < len; i++) {
         new->Path[i] = malloc(sizeof(char)*8);
     }
     int index = 0;
-    new->Path[index]  = strtok(cp,delim);
+	char *word;
+    word  = strtok(cp,delim);
     while (new->Path[index]!= NULL)
     {
-        index++;
-        new->Path[index] = strtok(NULL,delim);
+        strcpy(new->Path[index], word);
+		index++;
+        word = strtok(NULL,delim);
     }
 	new->num = index;
 	return new;
@@ -119,10 +121,18 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 PlaceId *GvGetMoveHistory(GameView gv, Player player,
                           int *numReturnedMoves, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedMoves = 0;
 	*canFree = false;
-	return NULL;
+	// check the gv is not null
+	if (gv == NULL || gv->num == 0) {
+		return NULL;
+	}
+	int maxLen = gv->num/5+1*(gv->num%5 > 0);
+	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+	for (int i = player; i < gv->num;  i+=5) {
+		printf("%s\n", gv->Path[i]);
+	}
+	return result;
 }
 
 PlaceId *GvGetLastMoves(GameView gv, Player player, int numMoves,
