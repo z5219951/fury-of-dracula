@@ -103,6 +103,10 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 	if (gv == NULL || gv-> num) {
 		return NULL;
 	}
+	int health = GvGetHealth(gv, player);
+	if (health == 0) {
+		return placeNameToId(ST_JOSEPH_AND_ST_MARY);
+	}
 	int numReturnedLocs; 
 	bool canFree;
 	PlaceId *result; 
@@ -120,6 +124,13 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 PlaceId GvGetVampireLocation(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+	// check gv is not NULL
+	if (gv == NULL || gv-> num) {
+		return NULL;
+	}
+	// Player currp = GvGetPlayer(gv);
+	
+	
 	return NOWHERE;
 }
 
