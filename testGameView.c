@@ -530,6 +530,9 @@ int main(void)
 				assert(numMoves == 0);
 				if (canFree) free(moves);
 			}
+
+			GvFree(gv);
+			printf("Test passed!\n");
 		}
 
 		{
@@ -588,6 +591,9 @@ int main(void)
 				assert(moves[5] == SANTANDER);
 				assert(moves[6] == MADRID);
 			}
+
+			GvFree(gv);
+			printf("Test passed!\n");
 		}
 
 		{
@@ -597,8 +603,8 @@ int main(void)
 				"GCA.... SGE.... HGE.... MGE.... DC?T... "
 				"GGR.... SGE.... HGE.... MGE.... DC?T... "
 				"GAL.... SGE.... HGE.... MGE.... DD2T... "
-				"GSR.... SGE.... HGE.... MGE.... DHIT... "
-				"GSN.... SGE.... HGE.... MGE.... DC?T... "
+				"GSR.... SGE.... HGE.... MGE.... DTPT... "
+				"GSN.... SGE.... HGE.... MGE.... DHIT... "
 				"GMA.... SSTTTV.";
 			
 			Message messages[32] = {};
@@ -611,9 +617,12 @@ int main(void)
 			assert(locs[1] == CITY_UNKNOWN);
 			assert(locs[2] == CITY_UNKNOWN);
 			assert(locs[3] == CITY_UNKNOWN);
-			assert(locs[4] == CITY_UNKNOWN);
-			assert(locs[5] == CITY_UNKNOWN);
+			assert(locs[4] == TELEPORT);
+			assert(locs[5] == CASTLE_DRACULA);
 			if (canFree) free(locs);
+
+			GvFree(gv);
+			printf("Test passed!\n");
 		}
 
 		{
@@ -690,6 +699,9 @@ int main(void)
 				assert(moves[1] == CITY_UNKNOWN);
 				if (canFree) free(moves);
 			}
+
+			GvFree(gv);
+			printf("Test passed!\n");
 		}
 	}
 

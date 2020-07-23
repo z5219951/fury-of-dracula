@@ -204,9 +204,16 @@ PlaceId *GvGetLocationHistory(GameView gv, Player player,
 			if (DOUBLE_BACK_1 <= result[i] && DOUBLE_BACK_5>= result[i]) {
 				int back = result[i] - DOUBLE_BACK_1 + 1;
 				result[i] = result[i-back];
+				// check whether i place is CASTLE_DRACULA
+				if (result[i] == TELEPORT) {
+					result[i] = CASTLE_DRACULA;
+				}
 			}
 			if (HIDE == result[i]) {
 				result[i] = result[i-1];
+				if (result[i] == TELEPORT) {
+					result[i] = CASTLE_DRACULA;
+				}
 			}
 		}
 	}
