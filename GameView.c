@@ -26,6 +26,7 @@ struct gameView {
 	// TODO: ADD FIELDS HERE
 	char **Path;
 	int num;
+	Map europe;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -161,18 +162,15 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
                         PlaceId from, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	int *Place;
-	// if player is Dracula
-	if (player == 4) {
-		if (round == 1) {
-			*numReturnedLocs = 
-		}
-	} else {
-		if (round == 1) {
-			*numReturnedLocs =
-		}
+	if (gv == NULL || gv->num == 0) {
+		return NULL;
 	}
-	*numReturnedLocs = 0;
+	// if player is Dracula
+	if (player == PLAYER_DRACULA) {
+
+	} else {
+
+	}
 	return NULL;
 }
 
