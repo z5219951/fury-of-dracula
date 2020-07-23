@@ -137,10 +137,10 @@ PlaceId GvGetVampireLocation(GameView gv)
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
 	// scan through last 6 rounds, from earliest to most recent
-	int curr = round - TRAIL_SIZE*NUM_PLAYERS;
+	int curr = round - TRAIL_SIZE * NUM_PLAYERS;
 	for (curr; curr < round; curr++) {
 		if (gv->Path[curr][0] == 'D') { // Dracula's play
-			if (gv->Path[curr][3] == 'V') { // immature vampire found
+			if (gv->Path[curr][3] == 'V') { // immature vampire placed
 				location[0] = gv->Path[curr][1];
 				location[1] = gv->Path[curr][2];
 				location[2] = '\0';
@@ -149,8 +149,8 @@ PlaceId GvGetVampireLocation(GameView gv)
 			if (gv->Path[curr][3] == 'V' ||
 				gv->Path[curr][4] == 'V' ||
 				gv->Path[curr][5] == 'V') { // immature vampire vanquished
-					location[0] = '\0';
-				}
+				location[0] = '\0';
+			}
 		}
 	}
 	if (location[0] == '\0') { // immature vampire doesn't exist
@@ -170,13 +170,38 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 
 	// dynamically allocated array for storing trap locations (if any)
 	char *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
-	// local array for storing abbreivs of trap locations 
-	char templocs[TRAIL_SIZE][2];
+	// local array for storing abbrievs of trap locations 
+	char templocs[TRAIL_SIZE][3];
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
 	// scan through last 6 rounds
+	int curr = round - TRAIL_SIZE * NUM_PLAYERS;
+	for (curr; curr < round; curr++) {
+		if (gv->Path[curr][0] == 'D') { // Dracula's play
+			if (gv->Path[curr][3] == 'V') { // trap placed
+				templocs[*numTraps][0] = gv->Path[curr][1];
+				templocs[*numTraps][1] = gv->Path[curr][2];
+				templocs[*numTraps][2] = '\0'; 
+				*numTraps++;
+			}
+		} else { // Hunter's play
+			if (gv->Path[curr][3] == 'T') { // trap encountered
+				// remove corresponding location from templocs
 
+				*numTraps--;
+			}
+			if (gv->Path[curr][4] == 'T') { // trap encountered
+				
+				*numTraps--;
+			}
+			if (gv->Path[curr][5] == 'T') { // trap encountered
+				
+				*numTraps--;
+			}
+		}
+	}
 
+	// convert abbrievs to PlaceId
 
 	return locations;
 }
