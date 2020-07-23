@@ -26,6 +26,7 @@ struct gameView {
 	// TODO: ADD FIELDS HERE
 	char **Path;
 	int num;
+	Map map;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -59,6 +60,7 @@ GameView GvNew(char *pastPlays, Message messages[])
         word = strtok(NULL,delim);
     }
 	new->num = index;
+	new->map = MapNew();
 	return new;
 }
 
@@ -66,6 +68,7 @@ void GvFree(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	free(gv->Path);
+	MapFree(gv->map);
 	free(gv);
 }
 
