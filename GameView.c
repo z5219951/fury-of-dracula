@@ -132,7 +132,7 @@ PlaceId GvGetVampireLocation(GameView gv)
 		return NULL;
 	}
 	// variable for storing vampire's location (if exists)
-	char *location[2] = "";
+	char *location[3] = "";
 	// get round and current player
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
