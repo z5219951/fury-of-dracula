@@ -26,6 +26,7 @@ struct gameView {
 	// TODO: ADD FIELDS HERE
 	char **Path;
 	int num;
+	int score;
 	Map map;
 };
 
@@ -60,6 +61,7 @@ GameView GvNew(char *pastPlays, Message messages[])
         word = strtok(NULL,delim);
     }
 	new->num = index;
+	new->score = score - index / 7;
 	new->map = MapNew();
 	return new;
 }
@@ -78,19 +80,29 @@ void GvFree(GameView gv)
 Round GvGetRound(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return 0;
+	return gv->num;
 }
 
 Player GvGetPlayer(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return PLAYER_LORD_GODALMING;
+	switch (gv->Path[gv->num - 1][0]) {
+		case 'G': return PLAYER_LORD_GODALMING; break;
+		case 'S': return PLAYER_DR_SEWARD; break;
+		case 'H': return PLAYER_VAN_HELSING; break;
+		case 'M': return PLAYER_MINA_HARKER; break;
+		case 'D': return PLAYER_DRACULA; break;
+		default :
+			fprintf(stderr, "Couldn't get Player!\n");
+			exit(EXIT_FAILURE);
+			return -1;
+	}
 }
 
 int GvGetScore(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return 0;
+	return gv->score;
 }
 
 int GvGetHealth(GameView gv, Player player)
