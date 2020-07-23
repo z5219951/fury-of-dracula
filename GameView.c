@@ -75,6 +75,9 @@ void GvFree(GameView gv)
 ////////////////////////////////////////////////////////////////////////
 // Game State Information
 
+// added functions
+void removeLoc(GameView gv, char *tempLocs[], Round curr, int *numTraps);
+
 Round GvGetRound(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
@@ -139,18 +142,17 @@ PlaceId GvGetVampireLocation(GameView gv)
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = round - TRAIL_SIZE * NUM_PLAYERS;
 	for (curr; curr < round; curr++) {
-		if (gv->Path[curr][0] == 'D') { // Dracula's play
-			if (gv->Path[curr][3] == 'V') { // immature vampire placed
-				location[0] = gv->Path[curr][1];
-				location[1] = gv->Path[curr][2];
-				location[2] = '\0';
-			}
-		} else { // Hunter's play
-			if (gv->Path[curr][3] == 'V' ||
-				gv->Path[curr][4] == 'V' ||
-				gv->Path[curr][5] == 'V') { // immature vampire vanquished
-				location[0] = '\0';
-			}
+		if (gv->Path[curr][0] == 'D' && 
+			gv->Path[curr][3] == 'V') {
+			// immature vampire placed on Dracula's turn
+			location[0] = gv->Path[curr][1];
+			location[1] = gv->Path[curr][2];
+			location[2] = '\0';
+		} else if (gv->Path[curr][3] == 'V' ||
+				   gv->Path[curr][4] == 'V' ||
+				   gv->Path[curr][5] == 'V') { 
+			// immature vampire vanquished on hunter's turn
+			location[0] = '\0';
 		}
 	}
 	if (location[0] == '\0') { // immature vampire doesn't exist
@@ -167,43 +169,68 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 		return NULL;
 	}
 	*numTraps = 0;
-
 	// dynamically allocated array for storing trap locations (if any)
 	char *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
-	// local array for storing abbrievs of trap locations 
-	char templocs[TRAIL_SIZE][3];
+	// array for storing potential trap locations 
+	char tempLocs[TRAIL_SIZE][3];
+	// get round and current player
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
+	// if not Dracula's turn
+	if (player != PLAYER_DRACULA) {
+		printf("Cannot determine trap locations.\n");
+		return locations;
+	}
 	// scan through last 6 rounds
-	int curr = round - TRAIL_SIZE * NUM_PLAYERS;
+	Round curr = round - TRAIL_SIZE * NUM_PLAYERS;
 	for (curr; curr < round; curr++) {
-		if (gv->Path[curr][0] == 'D') { // Dracula's play
-			if (gv->Path[curr][3] == 'V') { // trap placed
-				templocs[*numTraps][0] = gv->Path[curr][1];
-				templocs[*numTraps][1] = gv->Path[curr][2];
-				templocs[*numTraps][2] = '\0'; 
-				*numTraps++;
-			}
-		} else { // Hunter's play
-			if (gv->Path[curr][3] == 'T') { // trap encountered
-				// remove corresponding location from templocs
-
-				*numTraps--;
+		if (gv->Path[curr][0] == 'D' &&
+			gv->Path[curr][3] == 'T') { 
+			// trap placed on Dracula's turn
+			tempLocs[*numTraps][0] = gv->Path[curr][1];
+			tempLocs[*numTraps][1] = gv->Path[curr][2];
+			tempLocs[*numTraps][2] = '\0'; 
+			*numTraps++;
+		} else {
+			// if trap encountered by Hunter
+			if (gv->Path[curr][3] == 'T') { 
+				removeLoc(gv, &tempLocs, curr, numTraps);
 			}
 			if (gv->Path[curr][4] == 'T') { // trap encountered
-				
+				removeLoc(gv, &tempLocs, curr, numTraps);
 				*numTraps--;
 			}
 			if (gv->Path[curr][5] == 'T') { // trap encountered
-				
+				removeLoc(gv, &tempLocs, curr, numTraps);
 				*numTraps--;
 			}
 		}
 	}
-
 	// convert abbrievs to PlaceId
-
+	for (int i = 0; i < numTraps; i++) {
+		locations[i] = placeAbbrevToId(tempLocs[i]); 
+	}
 	return locations;
+}
+
+// find and remove corresponding location from templocs 
+void removeLoc(GameView gv, char *tempLocs[], Round curr, int *numTraps) {
+	for (int i = 0; i < *numTraps; i++) {
+		if (strncmp(gv->Path[curr][1], tempLocs[i][0], 2) == 0) {
+			if (i != numTraps-1) {
+				// replace location to be removed with last location in array
+				tempLocs[i][0] = tempLocs[*numTraps-1][0];
+				tempLocs[i][1] = tempLocs[*numTraps-1][1];
+				tempLocs[*numTraps-1][0] = '\0';
+				*numTraps--;
+			} else {
+				// remove last location
+				tempLocs[*numTraps][0] = '\0';
+				*numTraps--;
+			}
+			break;
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////
