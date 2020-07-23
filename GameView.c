@@ -141,8 +141,9 @@ PlaceId GvGetVampireLocation(GameView gv)
 	for (curr; curr < round; curr++) {
 		if (gv->Path[curr][0] == 'D') { // Dracula's play
 			if (gv->Path[curr][3] == 'V') { // immature vampire found
-				gv->Path[curr][1] = location[0];
-				gv->Path[curr][2] = location[1];
+				location[0] = gv->Path[curr][1];
+				location[1] = gv->Path[curr][2];
+				location[2] = '\0';
 			}
 		} else { // Hunter's play
 			if (gv->Path[curr][3] == 'V' ||
@@ -161,12 +162,23 @@ PlaceId GvGetVampireLocation(GameView gv)
 PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+	// check gv is not NULL
+	if (gv == NULL || gv-> num) {
+		return NULL;
+	}
 	*numTraps = 0;
+
+	// dynamically allocated array for storing trap locations (if any)
+	char *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
+	// local array for storing abbreivs of trap locations 
+	char templocs[TRAIL_SIZE][2];
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
 	// scan through last 6 rounds
 
-	return NULL;
+
+
+	return locations;
 }
 
 ////////////////////////////////////////////////////////////////////////
