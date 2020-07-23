@@ -131,11 +131,31 @@ PlaceId GvGetVampireLocation(GameView gv)
 	if (gv == NULL || gv-> num) {
 		return NULL;
 	}
+	// variable for storing vampire's location (if exists)
+	char *location[2] = "";
+	// get round and current player
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
-	// scan through last 6 rounds
-	
-	return NOWHERE;
+	// scan through last 6 rounds, from earliest to most recent
+	int curr = round - TRAIL_SIZE*NUM_PLAYERS;
+	for (curr; curr < round; curr++) {
+		if (gv->Path[curr][0] == 'D') { // Dracula's play
+			if (gv->Path[curr][3] == 'V') { // immature vampire found
+				gv->Path[curr][1] = location[0];
+				gv->Path[curr][2] = location[1];
+			}
+		} else { // Hunter's play
+			if (gv->Path[curr][3] == 'V' ||
+				gv->Path[curr][4] == 'V' ||
+				gv->Path[curr][5] == 'V') { // immature vampire vanquished
+					location[0] = '\0';
+				}
+		}
+	}
+	if (location[0] == '\0') { // immature vampire doesn't exist
+		return NOWHERE;
+	} 
+	return placeAbbrevToId(location);
 }
 
 PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
