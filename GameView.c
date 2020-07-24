@@ -203,30 +203,23 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			bool hasRepeatedMove = false;
 			bool hasRepeatedDB = false;
 			
-			// check if he has made the same move in the past 5 rounds			
+			// check if he has made the same move in the past 5 rounds
+			int round_temp;
 			if (round < 6) {
-				for (int i = 0; i < round; i++) {
-					int curr_ID = placeAbbrevToId(Past5Move[i]);
-					if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
-						hasRepeatedMove = true;
-					}
-					if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
-					 || curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
-					 || curr_ID == DOUBLE_BACK_5) {
-						 hasRepeatedDB = true;
-					 }
-				}
+				round_temp = round;
 			} else {
-				for (int i = 0; i < 5; i++) {
-					int curr_ID = placeAbbrevToId(Past5Move[i]);
-					if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
-						hasRepeatedMove = true;
-					}
-					if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
-					 || curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
-					 || curr_ID == DOUBLE_BACK_5) {
-						 hasRepeatedDB = true;
-					 }
+				round_temp = 5;
+			}
+
+			for (int i = 0; i < round_temp; i++) {
+				int curr_ID = placeAbbrevToId(Past5Move[i]);
+				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
+					hasRepeatedMove = true;
+				}
+				if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
+					|| curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
+					|| curr_ID == DOUBLE_BACK_5) {
+					hasRepeatedDB = true;
 				}
 			}
 			// if he has made the same move in the past 5 rounds
@@ -257,12 +250,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		int counter = 0;
 		ConnList curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
-			if (curr->type == ROAD) {
-				result[counter++] = curr->p;
-			}
-			if (curr->type == BOAT) {
-				if(curr->p ==)
-			}
+			
 			curr = curr->next;
 		}
 	}
