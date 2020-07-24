@@ -184,8 +184,11 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 		printf("Cannot determine trap locations.\n");
 		return locations;
 	}
-	// scan through last 6 rounds
-	Round curr = round - TRAIL_SIZE * NUM_PLAYERS;
+	// scan through last 6 rounds, from earliest to most recent
+	int curr = curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	if (curr < 0) {
+		curr = 0;
+	}
 	for (curr; curr < round; curr++) {
 		if (gv->Path[curr][0] == 'D' &&
 			gv->Path[curr][3] == 'T') { 
