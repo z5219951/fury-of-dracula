@@ -140,7 +140,10 @@ PlaceId GvGetVampireLocation(GameView gv)
 	int round = GvGetRound(gv);
 	int player = GvGetPlayer(gv);
 	// scan through last 6 rounds, from earliest to most recent
-	int curr = round - TRAIL_SIZE * NUM_PLAYERS;
+	int curr = curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	if (curr < 0) {
+		curr = 0;
+	}
 	for (curr; curr < round; curr++) {
 		if (gv->Path[curr][0] == 'D' && 
 			gv->Path[curr][3] == 'V') {
