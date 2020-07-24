@@ -60,3 +60,6 @@ testDraculaView
 testGameView
 testHunterView
 testMap
+
+# Sally's personal files
+sallytest*
