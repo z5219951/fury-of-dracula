@@ -106,7 +106,7 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check gv is not NULL
-	if (gv == NULL || gv-> num) {
+	if (gv == NULL || gv->num == 0) {
 		return NULL;
 	}
 	int health = GvGetHealth(gv, player);
@@ -131,7 +131,7 @@ PlaceId GvGetVampireLocation(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check gv is not NULL
-	if (gv == NULL || gv-> num) {
+	if (gv == NULL || gv->num == 0) {
 		return NULL;
 	}
 	// variable for storing vampire's location (if exists)
@@ -165,7 +165,7 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check gv is not NULL
-	if (gv == NULL || gv-> num) {
+	if (gv == NULL || gv->num == 0) {
 		return NULL;
 	}
 	*numTraps = 0;
