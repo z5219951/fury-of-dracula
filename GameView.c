@@ -167,43 +167,38 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 	if (gv == NULL || gv->num == 0) {
 		return NULL;
 	}
-
+	PlaceId *result;
 	if (player == PLAYER_DRACULA) {
-		*numReturnedLocs = MapNumConnections(gv->map, ROAD) 
-					 	 + MapNumConnections(gv->map, BOAT);
-	} else {
-		*numReturnedLocs = MapNumConnections(gv->map, ROAD) 
-					 	 + MapNumConnections(gv->map, BOAT)
-						 + MapNumConnections(gv->map, RAIL);
-	}
-
-	PlaceId *result = malloc(sizeof(PlaceId) * (*numReturnedLocs));
-	
-	// if player is dracula
-	if (player == PLAYER_DRACULA) {
-		// gain past 5 moves of dracula
-		char Past5Move[5][2];
+		char Past5Move[5][3];
 		int round_temp = round;
+		// gain past 5 moves of dracula
 		if (round < 6) {
 			for (int i = 0, j = 4; i < round; i++, j+=5) {
 				Past5Move[i][0] = gv->Path[j][1];
 				Past5Move[i][1] = gv->Path[j][2];
+				Past5Move[i][2] = '\0';
 			}
 		} else {
 			for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
 				Past5Move[i][0] = gv->Path[4 + j * 5][1];
 				Past5Move[i][1] = gv->Path[4 + j * 5][2];
+				Past5Move[i][2] = '\0';
 			}
 		}
-
+		// counter is number of adjacent cities
 		int counter = 0;
 		ConnList curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
-			// check move in past 5 rounds
+			counter++;
+			curr = curr->next;
+		}
+
+		result = malloc(sizeof(PlaceId) * counter);
+		curr = MapGetConnections(gv->map, from);
+		int index = 0;
+		while (curr != NULL) {
 			bool hasRepeatedMove = false;
 			bool hasRepeatedDB = false;
-			
-			// check if he has made the same move in the past 5 rounds
 			int round_temp;
 			if (round < 6) {
 				round_temp = round;
@@ -224,37 +219,35 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 			// if he has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
-				result[*numReturnedLocs - 1] = '\0';
-				(*numReturnedLocs)--;
+				result[counter - 1] = '\0';
+				counter--;
 				continue;
 			}
 			// if he has made DOUBLE_BACK in the past 5 rounds
 			if (hasRepeatedDB) {
-				result[*numReturnedLocs - 1] = '\0';
-				(*numReturnedLocs)--;
+				result[counter - 1] = '\0';
+				counter--;
 				continue;
 			}			
 
-			// if the adjacent city is hospital
+			// if the adjacent place is hospital
 			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				result[*numReturnedLocs - 1] = '\0';
-				(*numReturnedLocs)--;
+				result[counter - 1] = '\0';
+				counter--;
 				continue;
 			} 
+			// dracula hates rail
+			if (curr->type == RAIL) continue;
+			// if current adjacent city satisfy conditon
 			if (curr->type == ROAD || curr->type == BOAT) {
-				result[counter++] = curr->p;
+				result[index++] = curr->p;
 			}
 			curr = curr->next;
 		}
-	} else {
-		int counter = 0;
-		ConnList curr = MapGetConnections(gv->map, from);
-		while (curr != NULL) {
-			
-			curr = curr->next;
-		}
+		*numReturnedLocs = counter;		
 	}
-	return NULL;
+	
+	return result;
 }
 
 PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
@@ -262,8 +255,8 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
                               bool boat, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-
-	*numReturnedLocs = 0;
+	if(gv == NULL || gv->num == 0) return NULL;
+	PlaceId *result;
 	return NULL;
 }
 
