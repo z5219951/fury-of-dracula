@@ -237,7 +237,11 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				continue;
 			} 
 			// dracula hates rail
-			if (curr->type == RAIL) continue;
+			if (curr->type == RAIL) {
+				result[counter - 1] = '\0';
+				counter--;
+				continue;
+			}
 			// if current adjacent city satisfy conditon
 			if (curr->type == ROAD || curr->type == BOAT) {
 				result[index++] = curr->p;
@@ -252,6 +256,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		while (curr != NULL) {
 			if (curr->type == RAIL) {
 				if (determinant == 0) {
+					result[counter - 1] = '\0';
 					counter--;
 				} else if (determinant == 1) {
 					result[index++] = curr->p;
@@ -361,7 +366,11 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 				continue;
 			} 
 			// dracula hates rail
-			if (curr->type == RAIL) continue;
+			if (curr->type == RAIL) {
+				result[counter - 1] = '\0';
+				counter--;
+				continue;
+			}
 			// if current adjacent city satisfy conditon
 			if (curr->type == ROAD  && road == true) {
 				result[index++] = curr->p;
