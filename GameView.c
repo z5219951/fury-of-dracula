@@ -117,13 +117,13 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 	bool canFree;
 	PlaceId *result; 
 	result = GvGetLastLocations(gv, player, 1, &numReturnedLocs, &canFree); 
-	if (canFree == 1) { // free array
-		free(result);
-	}
 	if (numReturnedLocs == 0) { // if player has not had a turn yet
 		return NOWHERE; 
 	}
 	PlaceId location = result[0];
+	if (canFree == 1) { // free array
+		free(result);
+	}
 	return location;
 }
 
