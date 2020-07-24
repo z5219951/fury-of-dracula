@@ -61,6 +61,7 @@ GameView GvNew(char *pastPlays, Message messages[])
     }
 	new->num = index;
 	new->map = MapNew();
+	printf("1");
 	return new;
 }
 
