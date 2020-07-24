@@ -167,60 +167,84 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 	if (gv == NULL || gv->num == 0) {
 		return NULL;
 	}
-	PlaceId *result = malloc(sizeof(PlaceId) * (*numReturnedLocs));
-	ConnList curr = MapGetConnections(gv->map, from);
-	// if player is Dracula
+
 	if (player == PLAYER_DRACULA) {
 		*numReturnedLocs = MapNumConnections(gv->map, ROAD) 
-						 + MapNumConnections(gv->map, BOAT);
+					 	 + MapNumConnections(gv->map, BOAT);
+	} else {
+		*numReturnedLocs = MapNumConnections(gv->map, ROAD) 
+					 	 + MapNumConnections(gv->map, BOAT)
+						 + MapNumConnections(gv->map, RAIL);
+	}
 
-		// gain past 5 moves
-		char Past_5move[5][2];
+	PlaceId *result = malloc(sizeof(PlaceId) * (*numReturnedLocs));
+	
+	// if player is dracula
+	if (player == PLAYER_DRACULA) {
+		// gain past 5 moves of dracula
+		char Past5Move[5][2];
+		int round_temp = round;
 		if (round < 6) {
 			for (int i = 0, j = 4; i < round; i++, j+=5) {
-				Past_5move[i][0] = gv->Path[j][1];
-				Past_5move[i][1] = gv->Path[j][2];
+				Past5Move[i][0] = gv->Path[j][1];
+				Past5Move[i][1] = gv->Path[j][2];
 			}
 		} else {
 			for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
-				Past_5move[i][0] = gv->Path[4 + j * 5][1];
-				Past_5move[i][1] = gv->Path[4 + j * 5][2];
+				Past5Move[i][0] = gv->Path[4 + j * 5][1];
+				Past5Move[i][1] = gv->Path[4 + j * 5][2];
 			}
 		}
 
 		int counter = 0;
+		ConnList curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
 			// check move in past 5 rounds
 			bool hasRepeatedMove = false;
 			bool hasRepeatedDB = false;
-			// check if has made same move in the past 5 rounds
-			for (int i = 0; i < round % 5; i++) {
-				int curr_id = placeAbbrevToId(Past_5move[i]);
-				if (strcmp(Past_5move[i], placeIdToAbbrev(curr->p))) {
-					hasRepeatedMove = true;
+			
+			// check if he has made the same move in the past 5 rounds			
+			if (round < 6) {
+				for (int i = 0; i < round; i++) {
+					int curr_ID = placeAbbrevToId(Past5Move[i]);
+					if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
+						hasRepeatedMove = true;
+					}
+					if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
+					 || curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
+					 || curr_ID == DOUBLE_BACK_5) {
+						 hasRepeatedDB = true;
+					 }
 				}
-				if (curr_id == 103 || curr_id == 104 
-				||curr_id == 105 || curr_id == 106 || curr_id == 107) {
-					hasRepeatedDB = true;
+			} else {
+				for (int i = 0; i < 5; i++) {
+					int curr_ID = placeAbbrevToId(Past5Move[i]);
+					if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
+						hasRepeatedMove = true;
+					}
+					if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
+					 || curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
+					 || curr_ID == DOUBLE_BACK_5) {
+						 hasRepeatedDB = true;
+					 }
 				}
-
 			}
 			// if he has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
-				result[*numReturnedLocs] = '\0';
+				result[*numReturnedLocs - 1] = '\0';
 				(*numReturnedLocs)--;
 				continue;
 			}
 			// if he has made DOUBLE_BACK in the past 5 rounds
 			if (hasRepeatedDB) {
-				result[*numReturnedLocs] = '\0';
+				result[*numReturnedLocs - 1] = '\0';
 				(*numReturnedLocs)--;
 				continue;
 			}			
 
-			// hospital
+			// if the adjacent city is hospital
 			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				result[*numReturnedLocs] = '\0';
+				result[*numReturnedLocs - 1] = '\0';
 				(*numReturnedLocs)--;
 				continue;
 			} 
@@ -230,7 +254,17 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			curr = curr->next;
 		}
 	} else {
-		
+		int counter = 0;
+		ConnList curr = MapGetConnections(gv->map, from);
+		while (curr != NULL) {
+			if (curr->type == ROAD) {
+				result[counter++] = curr->p;
+			}
+			if (curr->type == BOAT) {
+				if(curr->p ==)
+			}
+			curr = curr->next;
+		}
 	}
 	return NULL;
 }
@@ -240,6 +274,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
                               bool boat, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+
 	*numReturnedLocs = 0;
 	return NULL;
 }
