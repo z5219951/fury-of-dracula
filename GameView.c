@@ -22,6 +22,9 @@
 #include<string.h>
 #include "Queue.h"
 // TODO: ADD YOUR OWN STRUCTS HERE
+PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance);
+PlaceId *MergeList(PlaceId *list1, PlaceId *list2);
+int GetLenOfList(PlaceId *list);
 
 struct gameView {
 	// TODO: ADD FIELDS HERE
@@ -258,22 +261,30 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	if (gv == NULL || gv->num == 0) {
+		printf("gameview is empty\n");
 		return NULL;
 	}
 	// counter is the number of adjacent cities
 	int counter = 0;
 	ConnList curr = MapGetConnections(gv->map, from);
+	// Test: print adjacent places
+	printf("\nThe following places is adjacent places:\n");
 	while (curr != NULL) {
+		// Test
+		printf("Place(%d): %s\n", counter, placeIdToName(curr->p));
 		counter++;
 		curr = curr->next;
 	}
+	// Test
+	printf("\nnumber of adjacent cities is %d\n", counter);
 	PlaceId *result = malloc(sizeof(PlaceId) * counter);
 	// if player is dracula
 	if (player == PLAYER_DRACULA) {
+		printf("\ncurrent player is dracula\n");
 		// gain past 5 moves of dracula
 		char Past5Move[5][3];
 		if (round < 6) {
-			for (int i = 0, j = 4; i < round; i++, j+=5) {
+			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
 				Past5Move[i][0] = gv->Path[j][1];
 				Past5Move[i][1] = gv->Path[j][2];
 				Past5Move[i][2] = '\0';
@@ -285,6 +296,19 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				Past5Move[i][2] = '\0';
 			}
 		}
+		// Test: print past 5 moves of dracula
+		{
+			int ID1 = placeAbbrevToId(Past5Move[0]);
+			printf("\nfirst move of dracula is %s(%d)\n", placeIdToName(ID1), ID1);
+			int ID2 = placeAbbrevToId(Past5Move[1]);
+			printf("second move of dracula is %s(%d)\n", placeIdToName(ID2), ID2);
+			int ID3 = placeAbbrevToId(Past5Move[2]);
+			printf("third move of dracula is %s(%d)\n", placeIdToName(ID3), ID3);
+			int ID4 = placeAbbrevToId(Past5Move[3]);
+			printf("fourth move of dracula is %s(%d)\n", placeIdToName(ID4), ID4);
+			int ID5 = placeAbbrevToId(Past5Move[4]);
+			printf("fifth move of dracula is %s(%d)\n", placeIdToName(ID5), ID5);
+		}
 		// check whether a adjacent city satisfy condition
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
@@ -292,6 +316,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		while (curr != NULL) {
 			bool hasRepeatedMove = false;
 			bool hasRepeatedDB = false;
+			bool hasRepeatedHide = false;
 			if (round < 6) {
 				round_temp = round;
 			} else {
@@ -300,7 +325,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			// check if dracula has made same move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
 				int curr_ID = placeAbbrevToId(Past5Move[i]);
-				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
+				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
 					hasRepeatedMove = true;
 				}
 				if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
@@ -308,39 +333,62 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 					|| curr_ID == DOUBLE_BACK_5) {
 					hasRepeatedDB = true;
 				}
+				if (curr_ID == HIDE) {
+					hasRepeatedHide = true;
+				}
 			}
 			// if dracula has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
-				result[counter - 1] = '\0';
-				counter--;
+				//result[counter - 1] = '\0';
+				//counter--;
+				printf("\nhas repeated move(%s)\n", placeIdToName(curr->p));
+				curr = curr->next;
 				continue;
 			}
-			// if dracula has made DOUBLE_BACK in the past 5 rounds
-			if (hasRepeatedDB) {
-				result[counter - 1] = '\0';
-				counter--;
-				continue;
-			}			
-
 			// if the adjacent city is hospital
 			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				result[counter - 1] = '\0';
-				counter--;
+				//result[counter - 1] = '\0';
+				//counter--;
+				printf("\ncan not access hospital\n");
+				curr = curr->next;
 				continue;
 			} 
 			// dracula hates rail
 			if (curr->type == RAIL) {
-				result[counter - 1] = '\0';
-				counter--;
+				//result[counter - 1] = '\0';
+				//counter--;
+				printf("\ndracula hates rail(%s)\n", placeIdToName(curr->p));
+				curr = curr->next;
 				continue;
 			}
+			// if dracula has made DOUBLE_BACK in the past 5 rounds
+			if (!hasRepeatedDB) {
+				//result[counter - 1] = '\0';
+				//counter--;			
+				result[index] = '\0';
+			}
+			if (!hasRepeatedHide) {
+				if (!placeIsSea(from)) {
+					result[index++] = HIDE;
+					result[index] = '\0';
+				}
+			}		
 			// if current adjacent city satisfy conditon
-			if (curr->type == ROAD || curr->type == BOAT) {
+			if (curr->type == ROAD || curr->type == BOAT)  {
 				result[index++] = curr->p;
+				result[index] = '\0';
 			}
 			curr = curr->next;
 		}
-		*numReturnedLocs = GetLenOfList(result);		
+		// Test
+		{
+			printf("\nThe number of return cities is %d\n", index);
+			printf("\nThe first return city is %s\n", placeIdToName(result[0]));
+			printf("\nThe second return city is %s\n", placeIdToName(result[1]));
+			printf("\nThe thire return city is %s\n", placeIdToName(result[2]));
+		}
+
+		*numReturnedLocs = index;		
 	} else {
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
@@ -393,7 +441,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		int round_temp = round;
 		// gain past 5 moves of dracula
 		if (round < 6) {
-			for (int i = 0, j = 4; i < round; i++, j+=5) {
+			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
 				Past5Move[i][0] = gv->Path[j][1];
 				Past5Move[i][1] = gv->Path[j][2];
 				Past5Move[i][2] = '\0';
@@ -411,7 +459,6 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		while (curr != NULL) {
 			bool hasRepeatedMove = false;
 			bool hasRepeatedDB = false;
-			int round_temp;
 			if (round < 6) {
 				round_temp = round;
 			} else {
@@ -420,7 +467,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			// check if dracula has made same move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
 				int curr_ID = placeAbbrevToId(Past5Move[i]);
-				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p) == 0)) {
+				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
 					hasRepeatedMove = true;
 				}
 				if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
@@ -467,7 +514,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
 		int max_distance = round % 4;
-		PlaceId *RailList = RailList = GetConnRail(gv, from, max_distance);
+		PlaceId *RailList = GetConnRail(gv, from, max_distance);
 		while (curr != NULL) {
 			if (curr->type == ROAD && road == true) {
 				result[index++] = curr->p;
@@ -554,7 +601,7 @@ PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
 	int len = GetLenOfList(list1) + GetLenOfList(list2);
 	PlaceId *newList = malloc(sizeof(PlaceId) * len + 1);
 	for (int i = 0; i < len; i++) {
-		if (i < strlen(list1)) {
+		if (i < GetLenOfList(list1)) {
 			newList[i] = list1[i];
 		} else {
 			newList[i] = list2[i];
