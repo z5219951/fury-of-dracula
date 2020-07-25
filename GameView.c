@@ -54,7 +54,7 @@ GameView GvNew(char *pastPlays, Message messages[])
     int index = 0;
 	char *word;
     word  = strtok(cp,delim);
-    while (new->Path[index]!= NULL)
+    while (word!= NULL)
     {
         strcpy(new->Path[index], word);
 		index++;
@@ -125,37 +125,129 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 PlaceId *GvGetMoveHistory(GameView gv, Player player,
                           int *numReturnedMoves, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedMoves = 0;
 	*canFree = false;
-	return NULL;
+	// check the gv is not null
+	if (gv == NULL || gv->num == 0) {
+		return NULL;
+	}
+	int maxLen = gv->num/5+1*(gv->num%5 > 0);
+	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+	// record the move
+	int totalNum = 0;
+	// record place
+	char collect[maxLen][3];
+	for (int i = player; i < gv->num;  i+=5) {
+		collect[totalNum][0] = gv->Path[i][1];
+		collect[totalNum][1] = gv->Path[i][2];
+		collect[totalNum][2] = '\0';
+		totalNum++;
+	}
+	// change the reord into placeid
+	for (int i = 0; i < totalNum; i++) {
+		result[i] = placeAbbrevToId(collect[i]);
+	}
+	*numReturnedMoves = totalNum;
+	*canFree = true;
+	return result;
 }
 
 PlaceId *GvGetLastMoves(GameView gv, Player player, int numMoves,
                         int *numReturnedMoves, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedMoves = 0;
-	*canFree = false;
-	return NULL;
+	*canFree = true;
+	// check the gv is not null
+	// return NULL if numMoves =0 
+	if (gv == NULL || gv->num == 0 || numMoves == 0) {
+		return NULL;
+	}
+	int maxLen = gv->num/5+1*(gv->num%5 > 0);
+	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+	// record the move
+	int totalNum = 0;
+	// record place
+	char collect[maxLen][3];
+	for (int i = player; i < gv->num;  i+=5) {
+		collect[totalNum][0] = gv->Path[i][1];
+		collect[totalNum][1] = gv->Path[i][2];
+		collect[totalNum][2] = '\0';
+		totalNum++;
+	}
+	*numReturnedMoves = totalNum;
+	// change the reord into placeid
+	int startPoint = 0;
+	if (totalNum > numMoves) {
+		startPoint = totalNum - numMoves;
+		*numReturnedMoves = numMoves;
+	}
+	for (int i = 0; i < totalNum && startPoint < maxLen; i++) {
+		result[i] = placeAbbrevToId(collect[startPoint]);
+		startPoint++;
+	}
+	return result;
 }
 
 PlaceId *GvGetLocationHistory(GameView gv, Player player,
                               int *numReturnedLocs, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedLocs = 0;
 	*canFree = false;
-	return NULL;
+	// check the gv is not null
+	if (gv == NULL || gv->num == 0) {
+		return NULL;
+	}
+	PlaceId *result;
+	// there is no differences between GvGetLocationHistory and GvGetMoveHistory
+	// when hunter player use this function.
+	result = GvGetMoveHistory(gv, player, numReturnedLocs, canFree);
+
+	//modify the result when DRACULA
+	if (player == PLAYER_DRACULA) {
+		for (int i = 0; i < *numReturnedLocs; i++) {
+			if (DOUBLE_BACK_1 <= result[i] && DOUBLE_BACK_5>= result[i]) {
+				int back = result[i] - DOUBLE_BACK_1 + 1;
+				result[i] = result[i-back];
+				// check whether i place is CASTLE_DRACULA
+				if (result[i] == TELEPORT) {
+					result[i] = CASTLE_DRACULA;
+				}
+			}
+			if (HIDE == result[i]) {
+				result[i] = result[i-1];
+				if (result[i] == TELEPORT) {
+					result[i] = CASTLE_DRACULA;
+				}
+			}
+		}
+	}
+	return result;
 }
 
 PlaceId *GvGetLastLocations(GameView gv, Player player, int numLocs,
                             int *numReturnedLocs, bool *canFree)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	*numReturnedLocs = 0;
 	*canFree = false;
-	return 0;
+	// check the gv is not null
+	// return NULL if numLocs =0 
+	if (gv == NULL || gv->num == 0 || numLocs == 0) {
+		return NULL;
+	}
+	// get result from GvGetLocationHistory
+	PlaceId *result = GvGetLocationHistory(gv, player, numReturnedLocs, canFree);
+	// change the reord into placeid
+	int totalNum = *numReturnedLocs;
+	int startPoint = 0;
+	if (totalNum > numLocs) {
+		startPoint = totalNum - numLocs;
+		*numReturnedLocs = numLocs;
+	}
+	for (int i = 0; i < totalNum && startPoint < totalNum; i++) {
+		result[i] = result[startPoint];
+		startPoint++;
+	}
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
