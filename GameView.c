@@ -53,7 +53,7 @@ GameView GvNew(char *pastPlays, Message messages[])
     int index = 0;
 	char *word;
     word  = strtok(cp,delim);
-    while (new->Path[index]!= NULL)
+    while (word!= NULL)
     {
         strcpy(new->Path[index], word);
 		index++;
