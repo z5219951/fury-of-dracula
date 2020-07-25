@@ -125,7 +125,7 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 	// if (canFree == 1) { // free array
 	// 	free(result);
 	// }
-	char testloc[3] = "ST"; 
+	char testloc[3] = "C?"; 
 	return placeAbbrevToId(testloc);
 }
 
@@ -140,7 +140,7 @@ PlaceId GvGetVampireLocation(GameView gv)
 	char location[3] = {};
 	// get current round
 	// Round round = GvGetRound(gv);
-	Round round = 4;
+	Round round = 6;
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
 	if (curr < 0) {
