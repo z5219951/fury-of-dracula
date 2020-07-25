@@ -20,6 +20,7 @@
 #include "Places.h"
 // add your own #includes here
 #include<string.h>
+#include "Queue.h"
 // TODO: ADD YOUR OWN STRUCTS HERE
 
 struct gameView {
@@ -175,11 +176,10 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		curr = curr->next;
 	}
 	PlaceId *result = malloc(sizeof(PlaceId) * counter);
-	
+	// if player is dracula
 	if (player == PLAYER_DRACULA) {
-		char Past5Move[5][3];
-		int round_temp = round;
 		// gain past 5 moves of dracula
+		char Past5Move[5][3];
 		if (round < 6) {
 			for (int i = 0, j = 4; i < round; i++, j+=5) {
 				Past5Move[i][0] = gv->Path[j][1];
@@ -193,13 +193,13 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				Past5Move[i][2] = '\0';
 			}
 		}
-
+		// check whether a adjacent city satisfy condition
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
+		int round_temp = round;
 		while (curr != NULL) {
 			bool hasRepeatedMove = false;
 			bool hasRepeatedDB = false;
-			int round_temp;
 			if (round < 6) {
 				round_temp = round;
 			} else {
@@ -248,25 +248,13 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 			curr = curr->next;
 		}
-		*numReturnedLocs = counter;		
+		*numReturnedLocs = GetLenOfList(result);		
 	} else {
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
-		int determinant = round % 4;
+		int max_distance = round % 4;
+		PlaceId *RailList = GetConnRail(gv, from, max_distance);
 		while (curr != NULL) {
-			if (curr->type == RAIL) {
-				if (determinant == 0) {
-					result[counter - 1] = '\0';
-					counter--;
-				} else if (determinant == 1) {
-					result[index++] = curr->p;
-				} else if (determinant == 2) {
-					
-				} else if (determinant == 3) {
-
-				}
-			}
-
 			if (curr->type == ROAD) {
 				result[index++] = curr->p;
 			}
@@ -282,8 +270,11 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 			curr = curr->next;
 		}
+		if (RailList != NULL) {
+			result = MergeList(result, RailList);
+		}
+		*numReturnedLocs = GetLenOfList(result);
 	}
-	
 	return result;
 }
 
@@ -379,10 +370,12 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			}
 			curr = curr->next;
 		}
-		*numReturnedLocs = counter;		
+		*numReturnedLocs = GetLenOfList(result);
 	} else {
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
+		int max_distance = round % 4;
+		PlaceId *RailList = RailList = GetConnRail(gv, from, max_distance);
 		while (curr != NULL) {
 			if (curr->type == ROAD && road == true) {
 				result[index++] = curr->p;
@@ -399,9 +392,12 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			}
 			curr = curr->next;
 		}
+		if (rail == true && RailList != NULL) {
+			result = MergeList(result, RailList);
+		}
+		*numReturnedLocs = GetLenOfList(result);
 	}
-
-	return NULL;
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -409,3 +405,75 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 
 // TODO
 
+// get the adjacent cities which can travel throught rail  
+PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance)
+{
+	if (max_distance == 0) return NULL;
+	
+	int n = MapNumPlaces(gv->map);
+	int *visited = calloc(n, sizeof(int));
+	int *distance = calloc(n, sizeof(int));
+
+	Queue q = newQueue();
+	QueueJoin(q, from);
+	visited[from] = 1;
+	while(!QueueIsEmpty(q)) {
+		int x = QueueLeave(q);
+		ConnList curr = MapGetConnections(gv->map, x);
+		while (curr != NULL) {
+			if (visited[curr->p] == 1) continue;
+			if (curr->type == RAIL) {
+				visited[curr->p] = 1;
+				distance[curr->p] = distance[x] + 1;
+				QueueJoin(q, curr->p);
+			}
+			curr = curr->next;
+		}
+	}
+	PlaceId *list = malloc(sizeof(PlaceId) * n + 1);
+	int counter = 0;
+	if (max_distance == 1) {
+		for (int i = 0; i < n; i++) {
+			if (distance[i] == 1) {
+				list[counter++] = distance[i];
+			}
+		}
+	} else if (max_distance == 2) {
+		for (int i = 0; i < n; i++) {
+			if (distance[i] == 1 || distance[i] == 2) {
+				list[counter++] = distance[i];
+			}
+		}
+	} else if (max_distance == 3) {
+		for (int i = 0; i < n; i++) {
+			if (distance[i] == 1 || distance[i] == 2 || distance[i] == 3)  {
+				list[counter++] = distance[i];
+			}
+		}
+	}
+	list[counter] = '\0';
+	dropQueue(q);
+	free(visited);
+	free(distance);
+	return list;
+}
+// merge two list
+PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
+	int len = GetLenOfList(list1) + GetLenOfList(list2);
+	PlaceId *newList = malloc(sizeof(PlaceId) * len + 1);
+	for (int i = 0; i < len; i++) {
+		if (i < strlen(list1)) {
+			newList[i] = list1[i];
+		} else {
+			newList[i] = list2[i];
+		}
+	}
+	newList[len] = '\0';
+	return newList;
+}
+// get the number of element in an array
+int GetLenOfList(PlaceId *list) {
+	int i = 0;
+	while (list[i] != '\0') i++;
+	return i;
+}
