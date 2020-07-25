@@ -146,7 +146,7 @@ PlaceId GvGetVampireLocation(GameView gv)
 	if (curr < 0) {
 		curr = 0;
 	}
-	for (; gv->Path[curr] != NULL; curr++) {
+	for (; curr < gv->num; curr++) {
 		if (gv->Path[curr][0] == 'D' && 
 			gv->Path[curr][4] == 'V') {
 			// immature vampire placed on Dracula's turn
@@ -192,7 +192,7 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 	if (curr < 0) {
 		curr = 0;
 	}
-	for (; gv->Path[curr] != NULL; curr++) {
+	for (; curr < gv->num; curr++) {
 		if (gv->Path[curr][0] == 'D' &&
 			gv->Path[curr][3] == 'T') { 
 			// trap placed on Dracula's turn

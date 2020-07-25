@@ -495,11 +495,6 @@ int main(void)
 	}
 
 	{///////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-
-		printf("Extra testing for GvGetPlayerLocation\n");
-
-=======
 		printf("Additional test for Game History Part");
 		
 		{
@@ -708,7 +703,6 @@ int main(void)
 			GvFree(gv);
 			printf("Test passed!\n");
 		}
->>>>>>> 12be1a1dc4ea0e664a49613ad49af0ccf55df51f
 	}
 
 	return EXIT_SUCCESS;
