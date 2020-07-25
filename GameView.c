@@ -46,7 +46,7 @@ GameView GvNew(char *pastPlays, Message messages[])
     strcpy(cp, pastPlays);
 
     int len = (strlen(pastPlays)+1)/8;
-    new->Path = malloc(sizeof(char *)*len + 1);
+    new->Path = malloc(sizeof(char *)*len);
     for (int i = 0; i < len; i++) {
         new->Path[i] = malloc(sizeof(char)*8);
     }
