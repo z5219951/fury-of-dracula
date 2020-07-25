@@ -140,7 +140,7 @@ PlaceId GvGetVampireLocation(GameView gv)
 	char location[3] = {};
 	// get current round
 	// Round round = GvGetRound(gv);
-	Round round = 6;
+	Round round = 16;
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
 	if (curr < 0) {
@@ -177,51 +177,105 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 	// dynamically allocated array for storing trap locations (if any)
 	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
 	// array for storing potential trap locations 
-	char tempLocs[TRAIL_SIZE][3];
-	// get round and current player
-	// int round = GvGetRound(gv);
-	int round = 4;
+	int round = 3; 
 	// int player = GvGetPlayer(gv);
 	// if not Dracula's turn
 	// if (player != PLAYER_DRACULA) {
 	// 	printf("Cannot determine trap locations.\n");
 	// 	return locations;
 	// }
+
+	// get last 6 moves from Dracula
+	bool canFree = 1;
+	int numReturnedLocs;
+	locations = GvGetLastLocations(gv, PLAYER_DRACULA, TRAIL_SIZE, 
+								   &numReturnedLocs, &canFree);
+	*numTraps = numReturnedLocs;
+	printf("%d\n", *numTraps);
+	// if (round < 6 || (round+1) % 13 < 6) { 
+	// 	*numTraps -= 1;
+	// }
+	// printf("%d\n", *numTraps);
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
 	if (curr < 0) {
 		curr = 0;
 	}
+
+	// array of locations to remove 
+	char remLoc[TRAIL_SIZE][3]; 
+	int i = 0;
 	for (; curr < gv->num; curr++) {
-		if (gv->Path[curr][0] == 'D' &&
-			gv->Path[curr][3] == 'T') { 
-			// trap placed on Dracula's turn
-			tempLocs[*numTraps][0] = gv->Path[curr][1];
-			tempLocs[*numTraps][1] = gv->Path[curr][2];
-			tempLocs[*numTraps][2] = '\0'; 
-			*numTraps += 1;
-		} else {
-			// if trap encountered by Hunter
-			if (gv->Path[curr][3] == 'T') { 
-				removeLoc(gv, tempLocs, curr, numTraps);
-			}
-			if (gv->Path[curr][4] == 'T') { // trap encountered
-				removeLoc(gv, tempLocs, curr, numTraps);
-			}
-			if (gv->Path[curr][5] == 'T') { // trap encountered
-				removeLoc(gv, tempLocs, curr, numTraps);
+		// if trap encountered by Hunter
+		if (gv->Path[curr][3] == 'T' &&
+			gv->Path[curr][0] != 'D') {
+			remLoc[i][0] = gv->Path[curr][1];
+			remLoc[i][1] = gv->Path[curr][2];
+			remLoc[i][2] = '\0';
+			i++;
+		}
+		if (gv->Path[curr][4] == 'T' &&
+			gv->Path[curr][0] != 'D') {
+			remLoc[i][0] = gv->Path[curr][1];
+			remLoc[i][1] = gv->Path[curr][2];
+			remLoc[i][2] = '\0';
+			i++;
+		}
+		if (gv->Path[curr][5] == 'T' &&
+			gv->Path[curr][0] != 'D') {
+			remLoc[i][0] = gv->Path[curr][1];
+			remLoc[i][1] = gv->Path[curr][2];
+			remLoc[i][2] = '\0';
+			i++;
+		}
+		if (gv->Path[curr][4] == 'V' &&
+			gv->Path[curr][0] == 'D') {
+			remLoc[i][0] = gv->Path[curr][1];
+			remLoc[i][1] = gv->Path[curr][2];
+			remLoc[i][2] = '\0';
+			i++;
+		}
+	}
+	int numLocs = numReturnedLocs;
+	for (int j = 0; j < i; j++) {
+		PlaceId locId = placeAbbrevToId(remLoc[j]);
+		for (int k = 0; k < numLocs; k++) {
+			if (locId == locations[k]) {
+				// remove loc from array
+				numLocs -= 1;
+				locations[k] = locations[numLocs];
+				locations = realloc(locations, sizeof(PlaceId)*numLocs);
+				*numTraps -= 1;
+				break;
 			}
 		}
 	}
-	// convert abbrievs to PlaceId
-	for (int i = 0; i < *numTraps; i++) {
-		locations[i] = placeAbbrevToId(tempLocs[i]); 
-	}
+ 
+
+	// for (int i = 0; i < TRAIL_SIZE; i++) {
+	// 	// printf("%d\n", locations[i]);
+	// 	for (int j = 0; j < TRAIL_SIZE; j++) {
+	// 		if (*tempLoc[j] == locations[i]) {
+	// 			// printf("%s\n", tempLoc[j]);
+	// 			// printf("%c\n", tempLoc[j][2]);
+	// 			printf("%d\n", locations[0]);
+	// 			// printf"%d\n", locations[i]);
+	// 			// remove location
+	// 			locations[i] = '\0';
+	// 			// printf("%d\n", locations[i]);
+	// 			*numTraps -= 1;
+	// 		}
+	// 	}
+	// }	
+	printf("%d\n", *numTraps);
 	return locations;
 }
 
+
 // find and remove corresponding location from templocs 
-void removeLoc(GameView gv, char tempLocs[TRAIL_SIZE][3], Round curr, int *numTraps) {
+void removeLoc(GameView gv, char tempLocs[TRAIL_SIZE][3], 
+			   Round curr, int *numTraps) {
+	// printf("%d\n", *numTraps);			   
 	for (int i = 0; i < *numTraps; i++) {
 		if (strncmp(&(gv->Path[curr][1]), tempLocs[i], 2) == 0) {
 			if (i != *numTraps-1) {
@@ -238,6 +292,7 @@ void removeLoc(GameView gv, char tempLocs[TRAIL_SIZE][3], Round curr, int *numTr
 			break;
 		}
 	}
+	// printf("%d\n", *numTraps);
 }
 
 ////////////////////////////////////////////////////////////////////////

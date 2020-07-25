@@ -222,7 +222,7 @@ int main(void)
 		
 		char *trail =
 			"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
-			"GGE.... SGE.... HGE.... MGE.... DSTT... "
+			"GGE.... SGE.... HGE.... MGE.... DTOT... "
 			"GGE.... SGE.... HGE.... MGE.... DHIT... "
 			"GGE.... SGE.... HGE.... MGE.... DD1T... "
 			"GSTTTTD";
