@@ -11,7 +11,8 @@ Yue-Hongshen-Sally-Xing
 - Hongsheng Fu z5274747
 
 ## GitHub Username
--Eli12138
+- Eli12138
+- iced-soda
 
 ## Tutor Code
 F11B(Dylan and Tim)
