@@ -494,5 +494,11 @@ int main(void)
 		printf("Test passed!\n");
 	}
 
+	{///////////////////////////////////////////////////////////////////
+
+		printf("Extra testing for GvGetPlayerLocation\n");
+
+	}
+
 	return EXIT_SUCCESS;
 }

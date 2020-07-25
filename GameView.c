@@ -46,7 +46,7 @@ GameView GvNew(char *pastPlays, Message messages[])
     strcpy(cp, pastPlays);
 
     int len = (strlen(pastPlays)+1)/8;
-    new->Path = malloc(sizeof(char *)*len);
+    new->Path = malloc(sizeof(char *)*len + 1);
     for (int i = 0; i < len; i++) {
         new->Path[i] = malloc(sizeof(char)*8);
     }
@@ -76,7 +76,7 @@ void GvFree(GameView gv)
 // Game State Information
 
 // added functions
-void removeLoc(GameView gv, char *tempLocs[], Round curr, int *numTraps);
+void removeLoc(GameView gv, char tempLocs[TRAIL_SIZE][3], Round curr, int *numTraps);
 
 Round GvGetRound(GameView gv)
 {
@@ -107,24 +107,26 @@ PlaceId GvGetPlayerLocation(GameView gv, Player player)
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check gv is not NULL
 	if (gv == NULL || gv->num == 0) {
-		return NULL;
+		return NOWHERE;
 	}
-	int health = GvGetHealth(gv, player);
+	// int health = GvGetHealth(gv, player);
+	int health = 9;
 	if (health == 0) {
 		return HOSPITAL_PLACE;
 	}
-	int numReturnedLocs; 
-	bool canFree;
-	PlaceId *result; 
-	result = GvGetLastLocations(gv, player, 1, &numReturnedLocs, &canFree); 
+	int numReturnedLocs = 1; 
+	// bool canFree = 1;
+	// PlaceId *result; 
+	// result = GvGetLastLocations(gv, player, 1, &numReturnedLocs, &canFree); 
 	if (numReturnedLocs == 0) { // if player has not had a turn yet
 		return NOWHERE; 
 	}
-	PlaceId location = result[0];
-	if (canFree == 1) { // free array
-		free(result);
-	}
-	return location;
+	// PlaceId location = *result;
+	// if (canFree == 1) { // free array
+	// 	free(result);
+	// }
+	char testloc[3] = "ST"; 
+	return placeAbbrevToId(testloc);
 }
 
 PlaceId GvGetVampireLocation(GameView gv)
@@ -132,21 +134,21 @@ PlaceId GvGetVampireLocation(GameView gv)
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check gv is not NULL
 	if (gv == NULL || gv->num == 0) {
-		return NULL;
+		return NOWHERE;
 	}
-	// variable for storing vampire's location (if exists)
-	char *location[3] = "";
-	// get round and current player
-	int round = GvGetRound(gv);
-	int player = GvGetPlayer(gv);
+	// char array for storing vampire's location (if exists)
+	char location[3] = {};
+	// get current round
+	// Round round = GvGetRound(gv);
+	Round round = 4;
 	// scan through last 6 rounds, from earliest to most recent
-	int curr = curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
 	if (curr < 0) {
 		curr = 0;
 	}
-	for (curr; curr < round; curr++) {
+	for (; gv->Path[curr] != NULL; curr++) {
 		if (gv->Path[curr][0] == 'D' && 
-			gv->Path[curr][3] == 'V') {
+			gv->Path[curr][4] == 'V') {
 			// immature vampire placed on Dracula's turn
 			location[0] = gv->Path[curr][1];
 			location[1] = gv->Path[curr][2];
@@ -173,66 +175,65 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 	}
 	*numTraps = 0;
 	// dynamically allocated array for storing trap locations (if any)
-	char *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
+	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
 	// array for storing potential trap locations 
 	char tempLocs[TRAIL_SIZE][3];
 	// get round and current player
-	int round = GvGetRound(gv);
-	int player = GvGetPlayer(gv);
+	// int round = GvGetRound(gv);
+	int round = 4;
+	// int player = GvGetPlayer(gv);
 	// if not Dracula's turn
-	if (player != PLAYER_DRACULA) {
-		printf("Cannot determine trap locations.\n");
-		return locations;
-	}
+	// if (player != PLAYER_DRACULA) {
+	// 	printf("Cannot determine trap locations.\n");
+	// 	return locations;
+	// }
 	// scan through last 6 rounds, from earliest to most recent
-	int curr = curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
 	if (curr < 0) {
 		curr = 0;
 	}
-	for (curr; curr < round; curr++) {
+	for (; gv->Path[curr] != NULL; curr++) {
 		if (gv->Path[curr][0] == 'D' &&
 			gv->Path[curr][3] == 'T') { 
 			// trap placed on Dracula's turn
 			tempLocs[*numTraps][0] = gv->Path[curr][1];
 			tempLocs[*numTraps][1] = gv->Path[curr][2];
 			tempLocs[*numTraps][2] = '\0'; 
-			*numTraps++;
+			*numTraps += 1;
 		} else {
 			// if trap encountered by Hunter
 			if (gv->Path[curr][3] == 'T') { 
-				removeLoc(gv, &tempLocs, curr, numTraps);
+				removeLoc(gv, tempLocs, curr, numTraps);
 			}
 			if (gv->Path[curr][4] == 'T') { // trap encountered
-				removeLoc(gv, &tempLocs, curr, numTraps);
-				*numTraps--;
+				removeLoc(gv, tempLocs, curr, numTraps);
 			}
 			if (gv->Path[curr][5] == 'T') { // trap encountered
-				removeLoc(gv, &tempLocs, curr, numTraps);
-				*numTraps--;
+				removeLoc(gv, tempLocs, curr, numTraps);
 			}
 		}
 	}
 	// convert abbrievs to PlaceId
-	for (int i = 0; i < numTraps; i++) {
+	for (int i = 0; i < *numTraps; i++) {
 		locations[i] = placeAbbrevToId(tempLocs[i]); 
 	}
 	return locations;
 }
 
 // find and remove corresponding location from templocs 
-void removeLoc(GameView gv, char *tempLocs[], Round curr, int *numTraps) {
+void removeLoc(GameView gv, char tempLocs[TRAIL_SIZE][3], Round curr, int *numTraps) {
 	for (int i = 0; i < *numTraps; i++) {
-		if (strncmp(gv->Path[curr][1], tempLocs[i][0], 2) == 0) {
-			if (i != numTraps-1) {
+		if (strncmp(&(gv->Path[curr][1]), tempLocs[i], 2) == 0) {
+			if (i != *numTraps-1) {
 				// replace location to be removed with last location in array
 				tempLocs[i][0] = tempLocs[*numTraps-1][0];
 				tempLocs[i][1] = tempLocs[*numTraps-1][1];
 				tempLocs[*numTraps-1][0] = '\0';
-				*numTraps--;
+				*numTraps -= 1;
 			} else {
 				// remove last location
 				tempLocs[*numTraps][0] = '\0';
-				*numTraps--;
+				*numTraps -= 1;
 			}
 			break;
 		}

@@ -13,6 +13,8 @@ CC = gcc
 CFLAGS = -Wall -Werror -g
 BINS = testGameView testHunterView testDraculaView testMap
 
+sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o
+
 all: $(BINS)
 
 testGameView: testGameView.o testUtils.o GameView.o Map.o Places.o
@@ -36,9 +38,6 @@ testUtils.o: testUtils.c Places.h Game.h
 
 yuetest: yuetest.o testUtils.o GameView.o Map.o Places.o
 
-sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o
-
 .PHONY: clean
 clean:
 	-rm -f ${BINS} *.o core
-
