@@ -306,6 +306,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 	int *levelRecord = calloc(maxLen,sizeof(int));
 	for (int i = 0; i < maxLen; i++) {
 		levelRecord[i] = -1;
+		new_path[i] = -1;
 	}
 	reachPlaces(hv,placeList,src,0);
 	int levelIndex = 0;
@@ -323,7 +324,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 		visited[x] = 1;
 		for (y = 0; y < maxLen; y++) {
 			if (levelRecord[y])
-			if (visited[y] || connectCheck(hv,placeList,x,y, levelRecord) == false || new_path[y] != 0){
+			if (visited[y] || connectCheck(hv,placeList,x,y, levelRecord) == false || new_path[y] == -1){
 				continue;
 			}
 			new_path[y] = x;
