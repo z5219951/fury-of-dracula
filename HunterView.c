@@ -23,7 +23,7 @@
 #include<string.h>
 // TODO: ADD YOUR OWN STRUCTS HERE
 
-struct HunterView {
+struct hunterView {
 	// TODO: ADD FIELDS HERE
 	char **Path;
 	int num;
