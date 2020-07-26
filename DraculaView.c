@@ -22,7 +22,7 @@
 #include<string.h>
 // TODO: ADD YOUR OWN STRUCTS HERE
 
-struct draculaView {
+struct DraculaView {
 	// TODO: ADD FIELDS HERE
 	char **Path;
 	int num;
