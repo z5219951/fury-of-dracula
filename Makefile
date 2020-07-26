@@ -38,7 +38,7 @@ DraculaView.o: DraculaView.c DraculaView.h Game.h
 testUtils.o: testUtils.c Places.h Game.h
 Queue.o: Queue.c Queue.h Game.h
 
-yuetest: yuetest.o testUtils.o GameView.o Map.o Places.o
+yuetest: yuetest.o testUtils.o GameView.o Map.o Places.o HunterView.o DraculaView.o
 .PHONY: clean
 clean:
 	-rm -f ${BINS} *.o core

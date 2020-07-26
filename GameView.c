@@ -222,6 +222,9 @@ PlaceId *GvGetLocationHistory(GameView gv, Player player,
 					result[i] = CASTLE_DRACULA;
 				}
 			}
+			if (result[i] == TELEPORT) {
+				result[i] = CASTLE_DRACULA;
+			}
 		}
 	}
 	return result;
