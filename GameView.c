@@ -282,6 +282,22 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 	if (player == PLAYER_DRACULA) {
 		printf("\ncurrent player is dracula\n");
 		// gain past 5 moves of dracula
+
+		// if current round is one
+		if (round == 1) {
+			int index = 0;
+			curr = MapGetConnections(gv->map, from);
+			while (curr != NULL) {
+				if (curr->type == ROAD || curr->type == BOAT) {
+					result[index++] = curr->p;
+					result[index] = '\0';
+				}
+				curr = curr->next;
+			}
+			*numReturnedLocs = index;
+			return result;
+		}
+
 		char Past5Move[5][3];
 		if (round < 6) {
 			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
@@ -296,6 +312,23 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				Past5Move[i][2] = '\0';
 			}
 		}
+		/* char *Past1Move;
+		if (round < 6) {
+			Past1Move = Past5Move[round - 2];
+		} else {
+			Past1Move = Past5Move[4];
+		}
+		if (placeAbbrevToId(Past1Move) == HIDE) {
+			*numReturnedLocs = 1;
+			result[0] = from;
+			result[1] = '\0';
+			return result;
+		} */
+
+		// Test : printf past 1 moves;
+		// int ID = placeAbbrevToId(Past1Move);
+		// printf("Past one move of dracula is %s", placeIdToName(ID));
+
 		// Test: print past 5 moves of dracula
 		{
 			int ID1 = placeAbbrevToId(Past5Move[0]);
@@ -315,8 +348,8 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		int round_temp = round;
 		while (curr != NULL) {
 			bool hasRepeatedMove = false;
-			bool hasRepeatedDB = false;
-			bool hasRepeatedHide = false;
+			// bool hasRepeatedDB = false;
+			// bool hasRepeatedHide = false;
 			if (round < 6) {
 				round_temp = round;
 			} else {
@@ -324,18 +357,18 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 			// check if dracula has made same move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
-				int curr_ID = placeAbbrevToId(Past5Move[i]);
+				// int curr_ID = placeAbbrevToId(Past5Move[i]);
 				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
 					hasRepeatedMove = true;
 				}
-				if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
+				/* if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
 					|| curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
 					|| curr_ID == DOUBLE_BACK_5) {
 					hasRepeatedDB = true;
 				}
 				if (curr_ID == HIDE) {
 					hasRepeatedHide = true;
-				}
+				}*/
 			}
 			// if dracula has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
@@ -362,7 +395,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				continue;
 			}
 			// if dracula has made DOUBLE_BACK in the past 5 rounds
-			if (!hasRepeatedDB) {
+			/* if (!hasRepeatedDB) {
 				//result[counter - 1] = '\0';
 				//counter--;			
 				result[index] = '\0';
@@ -372,13 +405,18 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 					result[index++] = HIDE;
 					result[index] = '\0';
 				}
-			}		
+			}*/	
 			// if current adjacent city satisfy conditon
 			if (curr->type == ROAD || curr->type == BOAT)  {
 				result[index++] = curr->p;
 				result[index] = '\0';
 			}
 			curr = curr->next;
+		}
+		// if there is no legal move, dracula teleports to castle dracula
+		if (index == 0) {
+			result[index++] = TELEPORT;
+			result[index] = '\0'; 
 		}
 		// Test
 		{
@@ -437,6 +475,22 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 	PlaceId *result = malloc(sizeof(PlaceId) * counter);
 	
 	if (player == PLAYER_DRACULA) {
+		if (round == 1) {
+			int index = 0;
+			curr = MapGetConnections(gv->map, from);
+			while (curr != NULL) {
+				if (curr->type == ROAD && road == true) {
+					result[index++] = curr->p;
+					result[index] = '\0'; 
+				} else if (curr->type == BOAT && boat == true) {
+					result[index++] = curr->p;
+					result[index] = '\0'; 
+				}
+				curr = curr->next;
+			}
+			*numReturnedLocs = index;
+			return result;
+		}
 		char Past5Move[5][3];
 		int round_temp = round;
 		// gain past 5 moves of dracula
@@ -458,58 +512,48 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		int index = 0;
 		while (curr != NULL) {
 			bool hasRepeatedMove = false;
-			bool hasRepeatedDB = false;
 			if (round < 6) {
 				round_temp = round;
 			} else {
 				round_temp = 5;
 			}
-			// check if dracula has made same move in the past 5 rounds
+			// check if dracula has made th same move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
-				int curr_ID = placeAbbrevToId(Past5Move[i]);
 				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
 					hasRepeatedMove = true;
-				}
-				if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
-					|| curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
-					|| curr_ID == DOUBLE_BACK_5) {
-					hasRepeatedDB = true;
 				}
 			}
 			// if dracula has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
-				result[counter - 1] = '\0';
-				counter--;
+				curr = curr->next;
 				continue;
-			}
-			// if dracula has made DOUBLE_BACK in the past 5 rounds
-			if (hasRepeatedDB) {
-				result[counter - 1] = '\0';
-				counter--;
-				continue;
-			}			
-
+			}	
 			// if the adjacent city is hospital
 			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				result[counter - 1] = '\0';
-				counter--;
+				curr = curr->next;
 				continue;
 			} 
 			// dracula hates rail
 			if (curr->type == RAIL) {
-				result[counter - 1] = '\0';
-				counter--;
+				curr = curr->next;
 				continue;
 			}
 			// if current adjacent city satisfy conditon
 			if (curr->type == ROAD  && road == true) {
 				result[index++] = curr->p;
+				result[index] = '\0'; 
 			} else if (curr->type == BOAT && boat == true) {
 				result[index++] = curr->p;
+				result[index] = '\0'; 
 			}
 			curr = curr->next;
 		}
-		*numReturnedLocs = GetLenOfList(result);
+		// if there is no legal move, dracula teleports to castle dracula
+		if (index == 0) {
+			result[index++] = TELEPORT;
+			result[index] = '\0'; 
+		}
+		*numReturnedLocs = index;
 	} else {
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
