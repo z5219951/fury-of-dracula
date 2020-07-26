@@ -30,6 +30,8 @@ struct hunterView {
 	Map map;
 };
 
+// change hunter adt into gameview adt
+static GameView hunterToGame(HunterView hv);
 ////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 
@@ -118,8 +120,26 @@ PlaceId HvGetVampireLocation(HunterView hv)
 PlaceId HvGetLastKnownDraculaLocation(HunterView hv, Round *round)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	*round = 0;
-	return NOWHERE;
+	int numReturnedLocs = 0;
+	bool canFree = false;
+	// check the hv is not null
+	// return NOWHERE if Dracula has not moved yet
+	if (hv == NULL || hv->num <= 4) {
+		return NOWHERE;
+	}
+	// transform hv to gv
+	GameView trans = hunterToGame(hv);
+	// get result from GvGetLocationHistory
+	PlaceId *result = GvGetLocationHistory(trans, PLAYER_DRACULA, &numReturnedLocs, &canFree);
+	PlaceId lastLoc = NOWHERE;
+	for (int i = 0; i < numReturnedLocs; i++) {
+		if (result[i] != CITY_UNKNOWN && result[i] != SEA_UNKNOWN) {
+			printf("%d\n", result[i]);
+			lastLoc = result[i];
+			*round = i;
+		}
+	}
+	return lastLoc;
 }
 
 PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
@@ -168,4 +188,17 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
 
+// help function
+// change hunter adt into gameview adt
+static GameView hunterToGame(HunterView hv) {
+	Message messages[] = {};
+	char *originPast = malloc(8*hv->num);
+	for (int i = 0; i < hv->num; i++) {
+		strcat(originPast, hv->Path[i]);
+		if (i != hv->num-1) {
+			strcat(originPast, " ");
+		}
+	}
+	return GvNew(originPast, messages);
+}
 // TODO
