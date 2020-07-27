@@ -180,7 +180,8 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 	*pathLength = 0;
 	PlaceId *lastPlace = GvGetLastLocations(trans, hunter,1, &numReturnedLocs, &canFree);
 	// if current player hasn't moved yet
-	if (numReturnedLocs == 0) {
+	// or dest == current place
+	if (numReturnedLocs == 0 || lastPlace[0] == dest) {
 		lastPlace = malloc(sizeof(PlaceId));
 		lastPlace[0] = dest;
 		return lastPlace;
@@ -188,6 +189,8 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 	PlaceId startId = lastPlace[0];
 	int maxLen = MapNumPlaces(hv->map);
 	HunterReach placeList = malloc(sizeof(HunterReach));
+
+	// set default value in placeList
 	placeList->places = calloc(maxLen, sizeof(PlaceId));
 	int round = (hv->num)/5;
 	placeList->round = round;
@@ -195,24 +198,8 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 	placeList->railNum = (hunter + round)%4;
 	placeList->totalNum = 0;
 	placeList->start = startId;
-	// get reachable places
-	// int *levelRecord = calloc(maxLen,sizeof(int));
-	// for (int i = 0; i < maxLen; i++) {
-	// 	levelRecord[i] = -1;
-	// }
-	// levelRecord[startId] = placeList->round;
-	// cleanplaceLis(placeList);
-	// reachPlacesRoad(hv,placeList,startId,0, levelRecord);
-	// for (int i = 0; i < maxLen; i++) {
-	// 	if (placeList->places[i] != -1) {
-	// 		const char *name1 = placeIdToAbbrev(i);
-	// 		printf("11 %s\n", name1);
-	// 	}
-	// }
-
-
-
 	cleanplaceLis(placeList);
+	// find shortest path
 	findshort(hv, placeList,dest);
 	*pathLength = placeList->totalNum;
 	PlaceId *result = malloc(sizeof(PlaceId)*placeList->totalNum);
@@ -279,6 +266,7 @@ static void reachPlacesRoad(HunterView hv, HunterReach placeList, PlaceId p, int
 	ConnList current = MapGetConnections(hv->map, p);
 	PlaceId originStart = p;
 	for (ConnList i = current; i != NULL; i = i->next) {
+		// only accept no rail type
 		if (i->type != RAIL) {
 			if (placeList->places[i->p] == -1) {
 				if (levelRecord[i->p] == -1) {
@@ -298,14 +286,12 @@ static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int
 	}
 	ConnList current = MapGetConnections(hv->map, p);
 	int originRail = placeList->railNum;
+	// all location come from the same start place
 	PlaceId originStart = placeList->start;
 	for (ConnList i = current; i != NULL; i = i->next) {
 		if (i->type == RAIL) {
 			if (placeList->places[i->p] == -1) {
 				if (levelRecord[i->p] == -1) {
-					if (i->p == BORDEAUX) {
-						//printf("bo from: %s\n", placeIdToAbbrev(placeList->start));
-					}
 					levelRecord[i->p] = levelRecord[originStart] + 1;
 				}
 				placeList->places[i->p] = originStart;
@@ -320,7 +306,7 @@ static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int
 	}
 }
 
-// get shortest path
+// get shortest path in BFS
 static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 	assert (hv != NULL);
 	int maxLen = MapNumPlaces(hv->map); 
@@ -348,15 +334,12 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 			if (visited[y] || connectCheck(hv,placeList,x,y, levelRecord) == false || new_path[y] != -1){
 				continue;
 			}
-			//printf("123");
 			new_path[y] = x;
 			if (y == dest) { isFound = 1;break; }
 			if (!visited[y]) { 
 				QueueYueJoin(q,y);
 			}
 		}
-		//showQueueYue(q);
-		//printf("BO: %d\n", levelRecord[BORDEAUX]);
 	}
 
 	int index = 0;
@@ -380,9 +363,6 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 // check two place conected
 static bool connectCheck(HunterView hv, HunterReach placeList,PlaceId src, PlaceId dest, int *levelRecord) {
 	placeList->railNum = (levelRecord[src] + placeList->player)%4;
-	//printf("task %d\n", dest);
-	//printf("connectCheck railNum %d\n", placeList->railNum);
-
 	// check road and sea
 	placeList->start = src;
 	int originRail = placeList->railNum;
