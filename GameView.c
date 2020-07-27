@@ -22,9 +22,6 @@
 #include<string.h>
 #include "Queue.h"
 // TODO: ADD YOUR OWN STRUCTS HERE
-PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance);
-PlaceId *MergeList(PlaceId *list1, PlaceId *list2);
-int GetLenOfList(PlaceId *list);
 
 struct gameView {
 	// TODO: ADD FIELDS HERE
@@ -328,10 +325,6 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			return result;
 		} */
 
-		// Test : printf past 1 moves;
-		// int ID = placeAbbrevToId(Past1Move);
-		// printf("Past one move of dracula is %s", placeIdToName(ID));
-
 		// Test: print past 5 moves of dracula
 		{
 			int ID1 = placeAbbrevToId(Past5Move[0]);
@@ -375,32 +368,24 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 			// if dracula has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
-				//result[counter - 1] = '\0';
-				//counter--;
 				printf("\nhas repeated move(%s)\n", placeIdToName(curr->p));
 				curr = curr->next;
 				continue;
 			}
 			// if the adjacent city is hospital
 			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				//result[counter - 1] = '\0';
-				//counter--;
 				printf("\ncan not access hospital\n");
 				curr = curr->next;
 				continue;
 			} 
 			// dracula hates rail
 			if (curr->type == RAIL) {
-				//result[counter - 1] = '\0';
-				//counter--;
 				printf("\ndracula hates rail(%s)\n", placeIdToName(curr->p));
 				curr = curr->next;
 				continue;
 			}
 			// if dracula has made DOUBLE_BACK in the past 5 rounds
-			/* if (!hasRepeatedDB) {
-				//result[counter - 1] = '\0';
-				//counter--;			
+			/* if (!hasRepeatedDB) {			
 				result[index] = '\0';
 			}
 			if (!hasRepeatedHide) {
@@ -438,15 +423,18 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		while (curr != NULL) {
 			if (curr->type == ROAD) {
 				result[index++] = curr->p;
+				result[index] = '\0';
 			}
 			if (curr->type == BOAT) {
 				// from sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
+					result[index] = '\0';
 				}
-				// from port city to adjaceent sea
+				// from port city to adjacent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
+					result[index] = '\0';
 				}
 			}
 			curr = curr->next;
@@ -565,15 +553,18 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		while (curr != NULL) {
 			if (curr->type == ROAD && road == true) {
 				result[index++] = curr->p;
+				result[index] = '\0';
 			}
 			if (curr->type == BOAT && boat == true) {
 				// from sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
+					result[index] = '\0';
 				}
 				// from port city to adjaceent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
+					result[index] = '\0';
 				}
 			}
 			curr = curr->next;
@@ -591,10 +582,12 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 
 // TODO
 
-// get the adjacent cities which can travel throught rail  
+// get the cities conncected with place "from" through rail
 PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance)
 {
-	if (max_distance == 0) return NULL;
+	if (max_distance == 0) {
+		return NULL;
+	}
 	
 	int n = MapNumPlaces(gv->map);
 	int *visited = calloc(n, sizeof(int));
@@ -603,40 +596,44 @@ PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance)
 	Queue q = newQueue();
 	QueueJoin(q, from);
 	visited[from] = 1;
+
 	while(!QueueIsEmpty(q)) {
 		int x = QueueLeave(q);
 		ConnList curr = MapGetConnections(gv->map, x);
 		while (curr != NULL) {
-			if (visited[curr->p] == 1) continue;
-			if (curr->type == RAIL) {
-				visited[curr->p] = 1;
-				distance[curr->p] = distance[x] + 1;
-				QueueJoin(q, curr->p);
+			if (visited[curr->p] == 1 || curr->type != RAIL) {
+				curr = curr->next;
+				continue;
 			}
+			visited[curr->p] = 1;
+			distance[curr->p] = distance[x] + 1;
+			QueueJoin(q, curr->p);
 			curr = curr->next;
 		}
 	}
-	PlaceId *list = malloc(sizeof(PlaceId) * n + 1);
+
+	PlaceId *list = malloc(sizeof(PlaceId) * (n + 1));
 	int counter = 0;
 	if (max_distance == 1) {
 		for (int i = 0; i < n; i++) {
 			if (distance[i] == 1) {
-				list[counter++] = distance[i];
+				list[counter++] = i;
 			}
 		}
 	} else if (max_distance == 2) {
 		for (int i = 0; i < n; i++) {
 			if (distance[i] == 1 || distance[i] == 2) {
-				list[counter++] = distance[i];
+				list[counter++] = i;
 			}
 		}
 	} else if (max_distance == 3) {
 		for (int i = 0; i < n; i++) {
 			if (distance[i] == 1 || distance[i] == 2 || distance[i] == 3)  {
-				list[counter++] = distance[i];
+				list[counter++] = i;
 			}
 		}
 	}
+
 	list[counter] = '\0';
 	dropQueue(q);
 	free(visited);
@@ -645,16 +642,16 @@ PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance)
 }
 // merge two list
 PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
-	int len = GetLenOfList(list1) + GetLenOfList(list2);
-	PlaceId *newList = malloc(sizeof(PlaceId) * len + 1);
-	for (int i = 0; i < len; i++) {
-		if (i < GetLenOfList(list1)) {
-			newList[i] = list1[i];
-		} else {
-			newList[i] = list2[i];
-		}
+	int len1 = GetLenOfList(list1);
+	int len2 = GetLenOfList(list2);
+	PlaceId *newList = malloc(sizeof(PlaceId) * (len1 + len2 + 1));
+	for (int i = 0; i < len1; i++) {
+		newList[i] = list1[i];
 	}
-	newList[len] = '\0';
+	for (int i = len1, j = 0; i < len1 + len2; i++, j++) {
+		newList[i] = list2[j];
+	}
+	newList[len1 + len2] = '\0';
 	return newList;
 }
 // get the number of element in an array
