@@ -44,8 +44,11 @@ typedef struct huntPlace {
 // change hunter adt into gameview adt
 static GameView hunterToGame(HunterView hv);
 
-// get hunter reachable places, from replace whether start from a rail
-static void reachPlaces(HunterView hv, HunterReach placeList, PlaceId p, int fromRail);
+// get hunter reachable places, start from road
+static void reachPlacesRoad(HunterView hv, HunterReach placeList, PlaceId p, int *levelRecord);
+
+// get hunter reachable places, start from rail
+static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int *levelRecord);
 
 // get shortest path
 static void findshort(HunterView hv, HunterReach placeList, PlaceId dest);
@@ -54,7 +57,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest);
 static bool connectCheck(HunterView hv, HunterReach placeList,PlaceId src, PlaceId dest, int *levelRecord);
 
 // clean placeList
-static void cleanplaceLis(HunterReach placeList)
+static void cleanplaceLis(HunterReach placeList);
 ////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 
@@ -193,17 +196,30 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 	placeList->totalNum = 0;
 	placeList->start = startId;
 	// get reachable places
-	// reachPlaces(hv,placeList,startId,0);
+	// int *levelRecord = calloc(maxLen,sizeof(int));
 	// for (int i = 0; i < maxLen; i++) {
-	// 	if (placeList->places[i] != 0) {
+	// 	levelRecord[i] = -1;
+	// }
+	// levelRecord[startId] = placeList->round;
+	// cleanplaceLis(placeList);
+	// reachPlacesRoad(hv,placeList,startId,0, levelRecord);
+	// for (int i = 0; i < maxLen; i++) {
+	// 	if (placeList->places[i] != -1) {
 	// 		const char *name1 = placeIdToAbbrev(i);
 	// 		printf("11 %s\n", name1);
 	// 	}
 	// }
+
+
+
 	cleanplaceLis(placeList);
 	findshort(hv, placeList,dest);
 	*pathLength = placeList->totalNum;
-	return placeList->places;
+	PlaceId *result = malloc(sizeof(PlaceId)*placeList->totalNum);
+	for (int i = 0; i < placeList->totalNum; i++) {
+		result[i] = placeList->places[i];
+	}
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -258,36 +274,49 @@ static GameView hunterToGame(HunterView hv) {
 	return GvNew(originPast, messages);
 }
 
-// get hunter reachable palces
-static void reachPlaces(HunterView hv, HunterReach placeList, PlaceId p, int fromRail) {
+// get hunter reachable palces from road or sead
+static void reachPlacesRoad(HunterView hv, HunterReach placeList, PlaceId p, int *levelRecord) {
+	ConnList current = MapGetConnections(hv->map, p);
+	PlaceId originStart = p;
+	for (ConnList i = current; i != NULL; i = i->next) {
+		if (i->type != RAIL) {
+			if (placeList->places[i->p] == -1) {
+				if (levelRecord[i->p] == -1) {
+					levelRecord[i->p] = levelRecord[originStart] + 1;
+				}
+				placeList->places[i->p] = originStart;
+				placeList->totalNum+=1;
+			}
+		}
+	}
+}
+
+// get hunter reachable places, start from rail
+static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int *levelRecord){
 	if (placeList->railNum == 0) {
-		placeList->places[placeList->start] = 0;
 		return;
 	}
 	ConnList current = MapGetConnections(hv->map, p);
 	int originRail = placeList->railNum;
+	PlaceId originStart = placeList->start;
 	for (ConnList i = current; i != NULL; i = i->next) {
-		if (fromRail) {
-			if (placeList->places[i->p] == -1 && i->type == RAIL) {
-				// record come from place id
-				placeList->places[i->p] = placeList->start;
-				placeList->totalNum++;
-				if (i->type == RAIL) {
-					placeList->railNum--;
-					reachPlaces(hv,placeList, i->p,1);
-				}
-			}	
-		} else {
+		if (i->type == RAIL) {
 			if (placeList->places[i->p] == -1) {
-				placeList->places[i->p] = placeList->start;
-				placeList->totalNum++;
-				if (i->type == RAIL) {
-					placeList->railNum--;
-					reachPlaces(hv,placeList, i->p,1);
+				if (levelRecord[i->p] == -1) {
+					if (i->p == BORDEAUX) {
+						//printf("bo from: %s\n", placeIdToAbbrev(placeList->start));
+					}
+					levelRecord[i->p] = levelRecord[originStart] + 1;
 				}
+				placeList->places[i->p] = originStart;
+				placeList->totalNum+=1;
+				
+				// move to next station
+				placeList->railNum = placeList->railNum - 1;
+				reachPlacesRail(hv, placeList, i->p, levelRecord);
+				placeList->railNum = originRail;
 			}
 		}
-		placeList->railNum = originRail;
 	}
 }
 
@@ -308,14 +337,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 		levelRecord[i] = -1;
 		new_path[i] = -1;
 	}
-	reachPlaces(hv,placeList,src,0);
-	int levelIndex = 0;
-	for (int i = 0; i< maxLen; i++) {
-		if (placeList->places[i] != -1) {
-			levelRecord[levelIndex] = placeList->round+1;
-		}
-	}
-	cleanplaceLis(HunterReach placeList);
+	levelRecord[src] = placeList->round;
 	while (!QueueYueIsEmpty(q) && !isFound) {
 		PlaceId y,x = QueueYueLeave(q);
 		if (visited[x]) {
@@ -323,10 +345,10 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 		}
 		visited[x] = 1;
 		for (y = 0; y < maxLen; y++) {
-			if (levelRecord[y])
-			if (visited[y] || connectCheck(hv,placeList,x,y, levelRecord) == false || new_path[y] == -1){
+			if (visited[y] || connectCheck(hv,placeList,x,y, levelRecord) == false || new_path[y] != -1){
 				continue;
 			}
+			//printf("123");
 			new_path[y] = x;
 			if (y == dest) { isFound = 1;break; }
 			if (!visited[y]) { 
@@ -334,6 +356,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 			}
 		}
 		//showQueueYue(q);
+		//printf("BO: %d\n", levelRecord[BORDEAUX]);
 	}
 
 	int index = 0;
@@ -356,24 +379,44 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 
 // check two place conected
 static bool connectCheck(HunterView hv, HunterReach placeList,PlaceId src, PlaceId dest, int *levelRecord) {
-	int origin = placeList->railNum;
 	placeList->railNum = (levelRecord[src] + placeList->player)%4;
-	reachPlaces(hv,placeList,src,0);
-	bool result = false;
-	if (placeList->places[dest] != 0) {
-		result = true;
+	//printf("task %d\n", dest);
+	//printf("connectCheck railNum %d\n", placeList->railNum);
+
+	// check road and sea
+	placeList->start = src;
+	int originRail = placeList->railNum;
+	PlaceId originStart = placeList->start;
+	placeList->places[src] = src;
+	reachPlacesRoad(hv,placeList,src,levelRecord);
+	placeList->places[src] = -1;
+	if (placeList->places[dest] != -1) {
+		cleanplaceLis(placeList);
+		return true;
 	}
 	cleanplaceLis(placeList);
-	placeList->railNum = origin;
-	return result;
+
+	// check rail
+	placeList->railNum = originRail;
+	placeList->start = originStart;
+	placeList->places[src] = src;
+	reachPlacesRail(hv,placeList,src,levelRecord);
+	if (placeList->places[dest] != -1) {
+		cleanplaceLis(placeList);
+		return true;
+	}
+	cleanplaceLis(placeList);
+	return false;
 }
 
 // clean placeList
 static void cleanplaceLis(HunterReach placeList) {
-	int maxLen = MapNumPlaces(hv->map);
+	Map ne = MapNew();
+	int maxLen = MapNumPlaces(ne);
 	//init to 0
 	for (int i = 0; i < maxLen;i++) {
 		placeList->places[i] = -1;
 	}
+	placeList->totalNum = 0;
 }
 // TODO
