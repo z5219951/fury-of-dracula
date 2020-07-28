@@ -260,44 +260,41 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
                         PlaceId from, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	if (gv == NULL || gv->num == 0) {
-		printf("gameview is empty\n");
+	if (round == 0) {
 		return NULL;
 	}
-	// counter is the number of adjacent cities
+	
+	int n = MapNumPlaces(gv->map);
+	// Two cities may be connected through multiple ways
+	// The following array is to avoid the same city be added
+	int *repeated_city = calloc(n, sizeof(int));
+	// Counter is the number of connection
 	int counter = 0;
 	ConnList curr = MapGetConnections(gv->map, from);
-	// Test: print adjacent places
-	printf("\nThe following places is adjacent places:\n");
 	while (curr != NULL) {
-		// Test
-		printf("Place(%d): %s\n", counter, placeIdToName(curr->p));
 		counter++;
 		curr = curr->next;
 	}
-	// Test
-	printf("\nnumber of adjacent cities is %d\n", counter);
-	PlaceId *result = malloc(sizeof(PlaceId) * counter);
-	// if player is dracula
-	if (player == PLAYER_DRACULA) {
-		printf("\ncurrent player is dracula\n");
-		// gain past 5 moves of dracula
 
-		// if current round is one
+	PlaceId *result = malloc(sizeof(PlaceId) * counter);
+	// If current player is dracula
+	if (player == PLAYER_DRACULA) {
+		// If dracula has not made a move yet
 		if (round == 1) {
 			int index = 0;
 			curr = MapGetConnections(gv->map, from);
 			while (curr != NULL) {
-				if (curr->type == ROAD || curr->type == BOAT) {
+				if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0) {
 					result[index++] = curr->p;
 					result[index] = '\0';
+					repeated_city[curr->p] = 1;
 				}
 				curr = curr->next;
 			}
 			*numReturnedLocs = index;
 			return result;
 		}
-
+		// Get past 5 move of dracula
 		char Past5Move[5][3];
 		if (round < 6) {
 			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
@@ -312,129 +309,80 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				Past5Move[i][2] = '\0';
 			}
 		}
-		/* char *Past1Move;
-		if (round < 6) {
-			Past1Move = Past5Move[round - 2];
-		} else {
-			Past1Move = Past5Move[4];
-		}
-		if (placeAbbrevToId(Past1Move) == HIDE) {
-			*numReturnedLocs = 1;
-			result[0] = from;
-			result[1] = '\0';
-			return result;
-		} */
-
-		// Test: print past 5 moves of dracula
-		{
-			int ID1 = placeAbbrevToId(Past5Move[0]);
-			printf("\nfirst move of dracula is %s(%d)\n", placeIdToName(ID1), ID1);
-			int ID2 = placeAbbrevToId(Past5Move[1]);
-			printf("second move of dracula is %s(%d)\n", placeIdToName(ID2), ID2);
-			int ID3 = placeAbbrevToId(Past5Move[2]);
-			printf("third move of dracula is %s(%d)\n", placeIdToName(ID3), ID3);
-			int ID4 = placeAbbrevToId(Past5Move[3]);
-			printf("fourth move of dracula is %s(%d)\n", placeIdToName(ID4), ID4);
-			int ID5 = placeAbbrevToId(Past5Move[4]);
-			printf("fifth move of dracula is %s(%d)\n", placeIdToName(ID5), ID5);
-		}
-		// check whether a adjacent city satisfy condition
-		curr = MapGetConnections(gv->map, from);
+		// Check whether a adjacent city satisfy condition
 		int index = 0;
-		int round_temp = round;
+		int round_temp;
+		curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
-			bool hasRepeatedMove = false;
-			// bool hasRepeatedDB = false;
-			// bool hasRepeatedHide = false;
-			if (round < 6) {
-				round_temp = round;
-			} else {
-				round_temp = 5;
-			}
-			// check if dracula has made same move in the past 5 rounds
-			for (int i = 0; i < round_temp; i++) {
-				// int curr_ID = placeAbbrevToId(Past5Move[i]);
-				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
-					hasRepeatedMove = true;
-				}
-				/* if (curr_ID == DOUBLE_BACK_1 || curr_ID == DOUBLE_BACK_2 
-					|| curr_ID == DOUBLE_BACK_3 || curr_ID == DOUBLE_BACK_4 
-					|| curr_ID == DOUBLE_BACK_5) {
-					hasRepeatedDB = true;
-				}
-				if (curr_ID == HIDE) {
-					hasRepeatedHide = true;
-				}*/
-			}
-			// if dracula has made the same move in the past 5 rounds
-			if (hasRepeatedMove) {
-				printf("\nhas repeated move(%s)\n", placeIdToName(curr->p));
+			// Dracula can not move through rail
+			if (curr->type == RAIL) {
 				curr = curr->next;
 				continue;
 			}
-			// if the adjacent city is hospital
+			/// If the adjacent place is hospital
 			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				printf("\ncan not access hospital\n");
 				curr = curr->next;
 				continue;
 			} 
-			// dracula hates rail
-			if (curr->type == RAIL) {
-				printf("\ndracula hates rail(%s)\n", placeIdToName(curr->p));
+			bool hasRepeatedMove = false;
+			if (round < 6) {
+				round_temp = round - 1;
+			} else {
+				round_temp = 5;
+			}
+			// Check if dracula has made the same location move in the past 5 rounds
+			for (int i = 0; i < round_temp; i++) {
+				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
+					hasRepeatedMove = true;
+				}
+			}
+			// If dracula has made the same location move in the past 5 rounds
+			// Then skip current location to next adjacent location
+			if (hasRepeatedMove) {
 				curr = curr->next;
 				continue;
 			}
-			// if dracula has made DOUBLE_BACK in the past 5 rounds
-			/* if (!hasRepeatedDB) {			
-				result[index] = '\0';
-			}
-			if (!hasRepeatedHide) {
-				if (!placeIsSea(from)) {
-					result[index++] = HIDE;
-					result[index] = '\0';
-				}
-			}*/	
-			// if current adjacent city satisfy conditon
-			if (curr->type == ROAD || curr->type == BOAT)  {
+			// If current adjacent city satisfy conditon
+			if (curr->type == ROAD && repeated_city[curr->p] == 0) {
 				result[index++] = curr->p;
 				result[index] = '\0';
+				repeated_city[curr->p] = 1;
+			}
+			else if (curr->type == BOAT && repeated_city[curr->p] == 0)  {
+				result[index++] = curr->p;
+				result[index] = '\0';
+				repeated_city[curr->p] = 1;
 			}
 			curr = curr->next;
 		}
-		// if there is no legal move, dracula teleports to castle dracula
-		if (index == 0) {
-			result[index++] = TELEPORT;
-			result[index] = '\0'; 
-		}
-		// Test
-		{
-			printf("\nThe number of return cities is %d\n", index);
-			printf("\nThe first return city is %s\n", placeIdToName(result[0]));
-			printf("\nThe second return city is %s\n", placeIdToName(result[1]));
-			printf("\nThe thire return city is %s\n", placeIdToName(result[2]));
-		}
-
-		*numReturnedLocs = index;		
+		*numReturnedLocs = GetLenOfList(result);		
 	} else {
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
 		int max_distance = round % 4;
-		PlaceId *RailList = GetConnRail(gv, from, max_distance);
+		PlaceId *RailList = GetConnRail(gv, from, max_distance, repeated_city);
 		while (curr != NULL) {
+			if (repeated_city[curr->p] == 1) {
+				curr=curr->next;
+				continue;
+			}
 			if (curr->type == ROAD) {
 				result[index++] = curr->p;
 				result[index] = '\0';
+				repeated_city[curr->p] = 1;
 			}
 			if (curr->type == BOAT) {
-				// from sea to sea or port city
+				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
 					result[index] = '\0';
+					repeated_city[curr->p] = 1;
 				}
-				// from port city to adjacent sea
+				// From port city to adjacent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
 					result[index] = '\0';
+					repeated_city[curr->p] = 1;
 				}
 			}
 			curr = curr->next;
@@ -452,13 +400,17 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
                               bool boat, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	if (gv == NULL || gv->num == 0) {
+	if (gv == NULL || gv->num == 0 || round == 0) {
 		return NULL;
 	}
-	// counter is the number of adjacent cities
+	int n = MapNumPlaces(gv->map);
+	// Two cities may be connected through multiple ways
+	// The following array is to avoid the same city be added
+	int *repeated_city = calloc(n, sizeof(int));
+	// Counter is the number of conncetion
 	int counter = 0;
 	ConnList curr = MapGetConnections(gv->map, from);
-	// get the number of adjacent cities
+	// Get the number of adjacent cities
 	while (curr != NULL) {
 		counter++;
 		curr = curr->next;
@@ -483,8 +435,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			return result;
 		}
 		char Past5Move[5][3];
-		int round_temp = round;
-		// gain past 5 moves of dracula
+		// Get past 5 move of dracula
 		if (round < 6) {
 			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
 				Past5Move[i][0] = gv->Path[j][1];
@@ -498,17 +449,28 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 				Past5Move[i][2] = '\0';
 			}
 		}
-
-		curr = MapGetConnections(gv->map, from);
+		// Check whether a adjacent city satisfy condition
 		int index = 0;
+		int round_temp = round;
+		curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
+			// If the adjacent city is hospital
+			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
+				curr = curr->next;
+				continue;
+			} 
+			// Dracula can not move through rail
+			if (curr->type == RAIL) {
+				curr = curr->next;
+				continue;
+			}
 			bool hasRepeatedMove = false;
 			if (round < 6) {
 				round_temp = round;
 			} else {
 				round_temp = 5;
 			}
-			// check if dracula has made th same move in the past 5 rounds
+			// Check if dracula has made the same location move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
 				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
 					hasRepeatedMove = true;
@@ -519,52 +481,71 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 				curr = curr->next;
 				continue;
 			}	
-			// if the adjacent city is hospital
-			if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-				curr = curr->next;
-				continue;
-			} 
-			// dracula hates rail
-			if (curr->type == RAIL) {
-				curr = curr->next;
-				continue;
-			}
-			// if current adjacent city satisfy conditon
+			// If dracula has made the same location move in the past 5 rounds
+			// Then skip current location to next adjacent location
 			if (curr->type == ROAD  && road == true) {
 				result[index++] = curr->p;
 				result[index] = '\0'; 
+				repeated_city[curr->p] = 1;
 			} else if (curr->type == BOAT && boat == true) {
 				result[index++] = curr->p;
 				result[index] = '\0'; 
+				repeated_city[curr->p] = 1;
 			}
 			curr = curr->next;
 		}
-		// if there is no legal move, dracula teleports to castle dracula
-		if (index == 0) {
-			result[index++] = TELEPORT;
-			result[index] = '\0'; 
-		}
-		*numReturnedLocs = index;
+		*numReturnedLocs = GetLenOfList(result);
 	} else {
+		if (round == 1) {
+			int index = 0;
+			curr = MapGetConnections(gv->map, from);
+			while (curr != NULL) {
+				if (curr->type == ROAD && road == true) {
+					result[index++] = curr->p;
+					result[index] = '\0';
+					curr = curr->next;
+				}
+				else if (curr->type == BOAT && boat == true) {
+					result[index++] = curr->p;
+					result[index] = '\0';
+					curr = curr->next;
+				}
+				else if (curr->type == RAIL && rail == true) {
+					result[index++] = curr->p;
+					result[index] = '\0';
+					curr = curr->next;
+				}
+			}
+			*numReturnedLocs = index;
+			return result;
+		}
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
 		int max_distance = round % 4;
-		PlaceId *RailList = GetConnRail(gv, from, max_distance);
+		PlaceId *RailList = GetConnRail(gv, from, max_distance, repeated_city);
 		while (curr != NULL) {
+			if (repeated_city[curr->p] == 1) {
+				curr=curr->next;
+				continue;
+			}
 			if (curr->type == ROAD && road == true) {
 				result[index++] = curr->p;
 				result[index] = '\0';
+				repeated_city[curr->p] = 1;
+
 			}
 			if (curr->type == BOAT && boat == true) {
-				// from sea to sea or port city
+				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
 					result[index] = '\0';
+					repeated_city[curr->p] = 1;
 				}
-				// from port city to adjaceent sea
+				// From port city to adjaceent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
 					result[index] = '\0';
+					repeated_city[curr->p] = 1;
 				}
 			}
 			curr = curr->next;
@@ -579,11 +560,10 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
-
 // TODO
 
 // get the cities conncected with place "from" through rail
-PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance)
+PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance, int *repeated_city)
 {
 	if (max_distance == 0) {
 		return NULL;
@@ -614,6 +594,12 @@ PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance)
 
 	PlaceId *list = malloc(sizeof(PlaceId) * (n + 1));
 	int counter = 0;
+	// make sure that there is no repeated city in returned list of GvGetReachable
+	for (int i = 0; i < n; i++) {
+		if (distance[i] == 1) {
+			repeated_city[i] = 1;
+		}
+	}
 	if (max_distance == 1) {
 		for (int i = 0; i < n; i++) {
 			if (distance[i] == 1) {
@@ -654,9 +640,12 @@ PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
 	newList[len1 + len2] = '\0';
 	return newList;
 }
-// get the number of element in an array
+// Get the number of element in an array
+// The list should end with '\0'
 int GetLenOfList(PlaceId *list) {
 	int i = 0;
-	while (list[i] != '\0') i++;
+	while (list[i] != '\0') {
+		i++;
+	}
 	return i;
 }
