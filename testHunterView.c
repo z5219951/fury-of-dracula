@@ -221,7 +221,6 @@ int main(void)
 	{///////////////////////////////////////////////////////////////////
 	
 		printf("Testing vampire location\n");
-		
 		char *trail =
 			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
 			"GBD.... SGE.... HGE.... MGE.... DC?T... "
@@ -282,11 +281,11 @@ int main(void)
 		Round round = -1;
 		assert(HvGetLastKnownDraculaLocation(hv, &round) == KLAUSENBURG);
 		assert(round == 1);
-
+		
 		HvFree(hv);
 		printf("Test passed!\n");
 	}
-
+	
 	{///////////////////////////////////////////////////////////////////
 		
 		printf("Testing shortest path 1\n");
@@ -468,6 +467,98 @@ int main(void)
 		
 		HvFree(hv);
 		printf("Test passed!\n");	
+	}
+
+	{
+		printf("Additional tests for HvGetLastKnownDraculaLocation & HvGetShortestPathTo");
+		{///////////////////////////////////////////////////////////////////
+			printf("HvGetShortestPathTo Part\n");
+			printf("Round 0\n");
+
+			char *trail =
+				"GGE....";
+			
+			Message messages[] = {
+				"Hello"
+			};
+			
+			HunterView hv = HvNew(trail, messages);
+
+			
+			int pathLength = -1;
+			PlaceId *path = HvGetShortestPathTo(hv, PLAYER_DR_SEWARD,
+			                                    CASTLE_DRACULA, &pathLength);
+			assert(path[0] == CASTLE_DRACULA);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+
+		{///////////////////////////////////////////////////////////////////
+	
+			printf("Go to current place\n");
+
+			char *trail =
+				"GCD....";
+			
+			Message messages[] = {
+				"Hello"
+			};
+			
+			HunterView hv = HvNew(trail, messages);
+
+			
+			int pathLength = -1;
+			PlaceId *path = HvGetShortestPathTo(hv, PLAYER_LORD_GODALMING,
+			                                    CASTLE_DRACULA, &pathLength);
+			assert(path[0] == CASTLE_DRACULA);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+
+		{////////////////////////////////////////////////////////////
+
+			printf("HvGetLastKnownDraculaLocation Part\n");
+			printf("Round 0\n");
+
+			char *trail =
+				"";
+			
+			Message messages[] = {};
+			
+			HunterView hv = HvNew(trail, messages);
+
+			
+			Round round = -1;
+			assert(HvGetLastKnownDraculaLocation(hv, &round) == NOWHERE);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+
+		{////////////////////////////////////////////////////////////
+
+			printf("HvGetLastKnownDraculaLocation Part\n");
+			printf("Check Teleport\n");
+
+			char *trail =
+				"GGE.... SGE.... HVI.... MGE.... DCD.V.. "
+				"GGE.... SGE.... HBD.... MGE.... DKLT... "
+				"GGE.... SGE.... HSZ.... MGE.... DC?T... "
+				"GGE.... SGE.... HKLT... MGE.... DTPT... "
+				"GGE.... SGE.... HCDV... MGE.... DD1T...";
+		
+			Message messages[25] = {};
+			HunterView hv = HvNew(trail, messages);
+			
+			Round round = -1;
+			assert(HvGetLastKnownDraculaLocation(hv, &round) == CASTLE_DRACULA);
+			assert(round == 4);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
 	}
 	
 	return EXIT_SUCCESS;
