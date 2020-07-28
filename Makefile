@@ -13,7 +13,7 @@ CC = gcc
 CFLAGS = -Wall -Werror -g
 BINS = testGameView testHunterView testDraculaView testMap
 
-sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o
+sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o HunterView.o DraculaView.o
 
 all: $(BINS)
 
