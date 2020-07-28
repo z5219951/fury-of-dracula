@@ -114,7 +114,7 @@ PlaceId HvGetPlayerLocation(HunterView hv, Player player)
 	int numReturnedLocs = 1; 
 	bool canFree = 1;
 	PlaceId *result; 
-	result = GvGetLastLocations(hv, player, 1, &numReturnedLocs, &canFree); 
+	result = HvGetLastLocations(hv, player, 1, &numReturnedLocs, &canFree); 
 	if (numReturnedLocs == 0) { // if player has not had a turn yet
 		return NOWHERE; 
 	}
@@ -134,7 +134,7 @@ PlaceId HvGetVampireLocation(HunterView hv)
 	}
 	bool canFree = 1;
 	int numReturnedLocs;
-	PlaceId *locations = vGetLastLocations(hv, PLAYER_DRACULA, TRAIL_SIZE, 
+	PlaceId *locations = GvGetLastLocations(hv, PLAYER_DRACULA, TRAIL_SIZE, 
 								   &numReturnedLocs, &canFree);
 	// get current round
 	Round round = HvGetRound(hv);

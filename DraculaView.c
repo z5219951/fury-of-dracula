@@ -90,7 +90,13 @@ int DvGetScore(DraculaView dv)
 int DvGetHealth(DraculaView dv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	// check dv is not NULL
+	return 0;
+}
+
+PlaceId DvGetPlayerLocation(DraculaView dv, Player player)
+{
+	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+	return// check dv is not NULL
 	if (dv == NULL || dv->num == 0) {
 		return NOWHERE;
 	}
@@ -101,7 +107,7 @@ int DvGetHealth(DraculaView dv, Player player)
 	int numReturnedLocs = 1; 
 	bool canFree = 1;
 	PlaceId *result; 
-	result = DvGetLastLocations(dv, player, 1, &numReturnedLocs, &canFree); 
+	result = GvGetLastLocations(dv, player, 1, &numReturnedLocs, &canFree); 
 	if (numReturnedLocs == 0) { // if player has not had a turn yet
 		return NOWHERE; 
 	}
@@ -110,12 +116,6 @@ int DvGetHealth(DraculaView dv, Player player)
 		free(result);
 	}
 	return location;
-}
-
-PlaceId DvGetPlayerLocation(DraculaView dv, Player player)
-{
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return NOWHERE;
 }
 
 PlaceId DvGetVampireLocation(DraculaView dv)
@@ -127,7 +127,7 @@ PlaceId DvGetVampireLocation(DraculaView dv)
 	}
 	bool canFree = 1;
 	int numReturnedLocs;
-	PlaceId *locations = DvGetLastLocations(dv, PLAYER_DRACULA, TRAIL_SIZE, 
+	PlaceId *locations = GvGetLastLocations(dv, PLAYER_DRACULA, TRAIL_SIZE, 
 								   &numReturnedLocs, &canFree);
 	// get current round
 	Round round = DvGetRound(dv);
@@ -175,7 +175,7 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 	// get last 6 moves from Dracula
 	bool canFree = 1;
 	int numReturnedLocs;
-	locations = DvGetLastLocations(dv, PLAYER_DRACULA, TRAIL_SIZE, 
+	locations = GvGetLastLocations(dv, PLAYER_DRACULA, TRAIL_SIZE, 
 								   &numReturnedLocs, &canFree);
 	*numTraps = numReturnedLocs;
 	Round round = DvGetRound(dv);
