@@ -177,7 +177,7 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
-
+int dvGetRoundHealth(DraculaView dv, Player player, int health, int round);
 // TODO
 
 #endif // !defined(FOD__DRACULA_VIEW_H_)
