@@ -617,7 +617,7 @@ int main(void)
 			assert(locs[1] == CITY_UNKNOWN);
 			assert(locs[2] == CITY_UNKNOWN);
 			assert(locs[3] == CITY_UNKNOWN);
-			assert(locs[4] == TELEPORT);
+			assert(locs[4] == CASTLE_DRACULA);
 			assert(locs[5] == CASTLE_DRACULA);
 			if (canFree) free(locs);
 
