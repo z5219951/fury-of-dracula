@@ -221,7 +221,6 @@ int main(void)
 	{///////////////////////////////////////////////////////////////////
 	
 		printf("Testing vampire location\n");
-		
 		char *trail =
 			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
 			"GBD.... SGE.... HGE.... MGE.... DC?T... "
@@ -282,11 +281,11 @@ int main(void)
 		Round round = -1;
 		assert(HvGetLastKnownDraculaLocation(hv, &round) == KLAUSENBURG);
 		assert(round == 1);
-
+		
 		HvFree(hv);
 		printf("Test passed!\n");
 	}
-
+	
 	{///////////////////////////////////////////////////////////////////
 		
 		printf("Testing shortest path 1\n");
