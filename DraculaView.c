@@ -669,7 +669,7 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		int index = 0;
 		int max_distance = round % 4;
 		// Get the places connected through rail
-		PlaceId *RailList = GetConnRail(dv, from, max_distance, repeated_city);
+		PlaceId *RailList = GetConnRail(dv->map, from, max_distance, repeated_city);
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -875,7 +875,7 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		int index = 0;
 		int max_distance = round % 4;
 		// Get the places connected through rail
-		PlaceId *RailList = GetConnRail(dv, from, max_distance, repeated_city);
+		PlaceId *RailList = GetConnRail(dv->map, from, max_distance, repeated_city);
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
