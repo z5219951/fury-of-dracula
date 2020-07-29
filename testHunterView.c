@@ -561,5 +561,111 @@ int main(void)
 		}
 	}
 	
+	{
+		printf("Additional tests for Making a Move Part");
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go (Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGo(hv, &pathLength);
+			assert(pathLength == 4);
+			assert(path[0] == ATLANTIC_OCEAN);
+			assert(path[1] == CADIZ);
+			assert(path[2] == MADRID);
+			assert(path[3] == SANTANDER);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go (Lord Godalming, Round 0)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGo(hv, &pathLength);
+			assert(pathLength == 0);
+			
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,true, true, true, &pathLength);
+			assert(pathLength == 4);
+			assert(path[0] == ATLANTIC_OCEAN);
+			assert(path[1] == CADIZ);
+			assert(path[2] == MADRID);
+			assert(path[3] == SANTANDER);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type only by rail(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,false, true, false, &pathLength);
+			assert(pathLength == 1);
+			assert(path[0] == MADRID);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type with road and rail(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,true, true, false, &pathLength);
+			assert(pathLength == 3);
+			assert(path[0] == CADIZ);
+			assert(path[1] == MADRID);
+			assert(path[2] == SANTANDER);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type with boat(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,false, false, true, &pathLength);
+			assert(pathLength == 1);
+			assert(path[0] == ATLANTIC_OCEAN);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+	}
 	return EXIT_SUCCESS;
 }
