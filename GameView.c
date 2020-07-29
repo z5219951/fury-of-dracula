@@ -286,7 +286,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			while (curr != NULL) {
 				if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 				curr = curr->next;
@@ -345,12 +345,12 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			// If current adjacent city satisfy conditon
 			if (curr->type == ROAD && repeated_city[curr->p] == 0) {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 			}
 			else if (curr->type == BOAT && repeated_city[curr->p] == 0)  {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 			}
 			curr = curr->next;
@@ -359,8 +359,8 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 	} else {
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
-		int max_distance = round % 4;
-		PlaceId *RailList = GetConnRail(gv, from, max_distance, repeated_city);
+		int max_distance = (round + player) % 4;
+		PlaceId *RailList = GetConnRail(gv->map, from, max_distance, repeated_city);
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -368,20 +368,20 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 			if (curr->type == ROAD) {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 			}
 			if (curr->type == BOAT) {
 				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 				// From port city to adjacent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 			}
@@ -424,10 +424,10 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			while (curr != NULL) {
 				if (curr->type == ROAD && road == true) {
 					result[index++] = curr->p;
-					result[index] = '\0'; 
+					result[index] = 999; 
 				} else if (curr->type == BOAT && boat == true) {
 					result[index++] = curr->p;
-					result[index] = '\0'; 
+					result[index] = 999; 
 				}
 				curr = curr->next;
 			}
@@ -485,11 +485,11 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			// Then skip current location to next adjacent location
 			if (curr->type == ROAD  && road == true) {
 				result[index++] = curr->p;
-				result[index] = '\0'; 
+				result[index] = 999; 
 				repeated_city[curr->p] = 1;
 			} else if (curr->type == BOAT && boat == true) {
 				result[index++] = curr->p;
-				result[index] = '\0'; 
+				result[index] = 999; 
 				repeated_city[curr->p] = 1;
 			}
 			curr = curr->next;
@@ -502,17 +502,17 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			while (curr != NULL) {
 				if (curr->type == ROAD && road == true) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					curr = curr->next;
 				}
 				else if (curr->type == BOAT && boat == true) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					curr = curr->next;
 				}
 				else if (curr->type == RAIL && rail == true) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					curr = curr->next;
 				}
 			}
@@ -521,8 +521,8 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		}
 		curr = MapGetConnections(gv->map, from);
 		int index = 0;
-		int max_distance = round % 4;
-		PlaceId *RailList = GetConnRail(gv, from, max_distance, repeated_city);
+		int max_distance = (round + player) % 4;
+		PlaceId *RailList = GetConnRail(gv->map, from, max_distance, repeated_city);
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -530,7 +530,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			}
 			if (curr->type == ROAD && road == true) {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 
 			}
@@ -538,13 +538,13 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 				// From port city to adjaceent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 			}
@@ -563,13 +563,13 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 // TODO
 
 // get the cities conncected with place "from" through rail
-PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance, int *repeated_city)
+PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city)
 {
 	if (max_distance == 0) {
 		return NULL;
 	}
 	
-	int n = MapNumPlaces(gv->map);
+	int n = MapNumPlaces(map);
 	int *visited = calloc(n, sizeof(int));
 	int *distance = calloc(n, sizeof(int));
 
@@ -579,7 +579,7 @@ PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance, int *repeated_
 
 	while(!QueueIsEmpty(q)) {
 		int x = QueueLeave(q);
-		ConnList curr = MapGetConnections(gv->map, x);
+		ConnList curr = MapGetConnections(map, x);
 		while (curr != NULL) {
 			if (visited[curr->p] == 1 || curr->type != RAIL) {
 				curr = curr->next;
@@ -620,7 +620,7 @@ PlaceId *GetConnRail(GameView gv, PlaceId from, int max_distance, int *repeated_
 		}
 	}
 
-	list[counter] = '\0';
+	list[counter] = 999;
 	dropQueue(q);
 	free(visited);
 	free(distance);
@@ -637,14 +637,14 @@ PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
 	for (int i = len1, j = 0; i < len1 + len2; i++, j++) {
 		newList[i] = list2[j];
 	}
-	newList[len1 + len2] = '\0';
+	newList[len1 + len2] = 999;
 	return newList;
 }
 // Get the number of element in an array
 // The list should end with '\0'
 int GetLenOfList(PlaceId *list) {
 	int i = 0;
-	while (list[i] != '\0') {
+	while (list[i] != 999) {
 		i++;
 	}
 	return i;
