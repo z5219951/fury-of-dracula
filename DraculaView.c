@@ -29,6 +29,9 @@ struct draculaView {
 	Map map;
 };
 
+// change dracula adt into gameview adt
+static GameView draculaToGame(DraculaView dv);
+
 ////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 
@@ -132,10 +135,8 @@ int DvGetHealth(DraculaView dv, Player player)
 PlaceId DvGetPlayerLocation(DraculaView dv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return// check dv is not NULL
-	if (dv == NULL || dv->num == 0) {
-		return NOWHERE;
-	}
+	// check dv is not NULL
+	assert(dv != NULL);
 	int health = DvGetHealth(dv, player);
 	if (health == 0) {
 		return HOSPITAL_PLACE;
@@ -143,7 +144,8 @@ PlaceId DvGetPlayerLocation(DraculaView dv, Player player)
 	int numReturnedLocs = 1; 
 	bool canFree = 1;
 	PlaceId *result; 
-	result = GvGetLastLocations(dv, player, 1, &numReturnedLocs, &canFree); 
+	GameView trans = draculaToGame(dv);
+	result = GvGetLastLocations(trans, player, 1, &numReturnedLocs, &canFree); 
 	if (numReturnedLocs == 0) { // if player has not had a turn yet
 		return NOWHERE; 
 	}
@@ -158,13 +160,18 @@ PlaceId DvGetVampireLocation(DraculaView dv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check dv is not NULL
-	if (dv == NULL || dv->num == 0) {
+	assert(dv != NULL);
+	if (dv->num == 0) {
 		return NOWHERE;
 	}
 	bool canFree = 1;
 	int numReturnedLocs;
-	PlaceId *locations = GvGetLastLocations(dv, PLAYER_DRACULA, TRAIL_SIZE, 
+	GameView trans = draculaToGame(dv);
+	PlaceId *locations = GvGetLastLocations(trans, PLAYER_DRACULA, TRAIL_SIZE, 
 								   &numReturnedLocs, &canFree);
+	if (numReturnedLocs == 0) {
+		return NOWHERE;
+	}
 	// get current round
 	Round round = DvGetRound(dv);
 	// scan through last 6 rounds, from earliest to most recent
@@ -201,17 +208,12 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 	*numTraps = 0;
 	// dynamically allocated array for storing trap locations (if any)
 	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
-	int player = DvGetPlayer(dv);
-	// if not Dracula's turn
-	if (player != PLAYER_DRACULA) {
-		printf("Cannot determine trap locations.\n");
-		return locations;
-	}
-
+	
 	// get last 6 moves from Dracula
 	bool canFree = 1;
 	int numReturnedLocs;
-	locations = GvGetLastLocations(dv, PLAYER_DRACULA, TRAIL_SIZE, 
+	GameView trans = draculaToGame(dv);
+	locations = GvGetLastLocations(trans, PLAYER_DRACULA, TRAIL_SIZE, 
 								   &numReturnedLocs, &canFree);
 	*numTraps = numReturnedLocs;
 	Round round = DvGetRound(dv);
@@ -373,4 +375,20 @@ int dvGetRoundHealth(DraculaView dv, Player player, int health, int round) {
 	}
 	return health;
 }
+
+// help function
+// change hunter adt into gameview adt
+static GameView draculaToGame(DraculaView dv) {
+	Message messages[] = {};
+	char *originPast = malloc(8*dv->num);
+	for (int i = 0; i < dv->num; i++) {
+		strcat(originPast, dv->Path[i]);
+		if (i != dv->num-1) {
+			strcat(originPast, " ");
+		}
+	}
+	return GvNew(originPast, messages);
+}
+
 // TODO
+

@@ -176,13 +176,17 @@ PlaceId GvGetVampireLocation(GameView gv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check gv is not NULL
-	if (gv == NULL || gv->num == 0) {
+	assert(gv != NULL);
+	if (gv->num == 0) {
 		return NOWHERE;
 	}
 	bool canFree = 1;
 	int numReturnedLocs;
 	PlaceId *locations = GvGetLastLocations(gv, PLAYER_DRACULA, TRAIL_SIZE, 
 								   &numReturnedLocs, &canFree);
+	if (numReturnedLocs == 0) {
+		return NOWHERE;
+	}
 	// get current round
 	Round round = GvGetRound(gv);
 	// scan through last 6 rounds, from earliest to most recent
@@ -225,7 +229,6 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 		printf("Cannot determine trap locations.\n");
 		return locations;
 	}
-
 	// get last 6 moves from Dracula
 	bool canFree = 1;
 	int numReturnedLocs;
