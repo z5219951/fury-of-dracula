@@ -224,7 +224,7 @@ PlaceId HvGetVampireLocation(HunterView hv)
 	if (curr < 0) {
 		curr = 0;
 	}
-	int vampLoc = 0;
+	int vampLoc = -1;
 	for (int counter = 1; curr < hv->num; curr++, counter++) {
 		if (hv->Path[curr][0] == 'D' && 
 			hv->Path[curr][4] == 'V') {
@@ -235,6 +235,9 @@ PlaceId HvGetVampireLocation(HunterView hv)
 			// immature vampire vanquished on hunter's turn
 			return NOWHERE;
 		}
+	}
+	if (vampLoc == -1) {
+		return NOWHERE;
 	}
 	PlaceId result = locations[vampLoc-1];
 	if (canFree) {

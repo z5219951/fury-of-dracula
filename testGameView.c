@@ -283,7 +283,7 @@ int main(void)
 		
 		char *trail =
 			"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
-			"GGE.... SGE.... HGE.... MGE.... DTOT... "
+			"GGE.... SGE.... HGE.... MGE.... DSTT... "
 			"GGE.... SGE.... HGE.... MGE.... DHIT... "
 			"GGE.... SGE.... HGE.... MGE.... DD1T... "
 			"GSTTTTD";
@@ -472,88 +472,88 @@ int main(void)
 		printf("Test passed!\n");
 	}
 
-	{///////////////////////////////////////////////////////////////////
+	// {///////////////////////////////////////////////////////////////////
 	
-		printf("Testing connections\n");
+	// 	printf("Testing connections\n");
 		
-		char *trail = "";
-		Message messages[] = {};
-		GameView gv = GvNew(trail, messages);
+	// 	char *trail = "";
+	// 	Message messages[] = {};
+	// 	GameView gv = GvNew(trail, messages);
 
-		{
-			printf("\tChecking Galatz road connections "
-			       "(Lord Godalming, Round 1)\n");
-			int numLocs = -1;
-			PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
-			                                     1, GALATZ, true, false,
-			                                     false, &numLocs);
+	// 	{
+	// 		printf("\tChecking Galatz road connections "
+	// 		       "(Lord Godalming, Round 1)\n");
+	// 		int numLocs = -1;
+	// 		PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
+	// 		                                     1, GALATZ, true, false,
+	// 		                                     false, &numLocs);
 
-			assert(numLocs == 5);
-			sortPlaces(locs, numLocs);
-			assert(locs[0] == BUCHAREST);
-			assert(locs[1] == CASTLE_DRACULA);
-			assert(locs[2] == CONSTANTA);
-			assert(locs[3] == GALATZ);
-			assert(locs[4] == KLAUSENBURG);
-			free(locs);
-		}
+	// 		assert(numLocs == 5);
+	// 		sortPlaces(locs, numLocs);
+	// 		assert(locs[0] == BUCHAREST);
+	// 		assert(locs[1] == CASTLE_DRACULA);
+	// 		assert(locs[2] == CONSTANTA);
+	// 		assert(locs[3] == GALATZ);
+	// 		assert(locs[4] == KLAUSENBURG);
+	// 		free(locs);
+	// 	}
 
-		{
-			printf("\tChecking Ionian Sea boat connections "
-			       "(Lord Godalming, Round 1)\n");
+	// 	{
+	// 		printf("\tChecking Ionian Sea boat connections "
+	// 		       "(Lord Godalming, Round 1)\n");
 			
-			int numLocs = -1;
-			PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
-			                                     1, IONIAN_SEA, false, false,
-			                                     true, &numLocs);
+	// 		int numLocs = -1;
+	// 		PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
+	// 		                                     1, IONIAN_SEA, false, false,
+	// 		                                     true, &numLocs);
 			
-			assert(numLocs == 7);
-			sortPlaces(locs, numLocs);
-			assert(locs[0] == ADRIATIC_SEA);
-			assert(locs[1] == ATHENS);
-			assert(locs[2] == BLACK_SEA);
-			assert(locs[3] == IONIAN_SEA);
-			assert(locs[4] == SALONICA);
-			assert(locs[5] == TYRRHENIAN_SEA);
-			assert(locs[6] == VALONA);
-			free(locs);
-		}
+	// 		assert(numLocs == 7);
+	// 		sortPlaces(locs, numLocs);
+	// 		assert(locs[0] == ADRIATIC_SEA);
+	// 		assert(locs[1] == ATHENS);
+	// 		assert(locs[2] == BLACK_SEA);
+	// 		assert(locs[3] == IONIAN_SEA);
+	// 		assert(locs[4] == SALONICA);
+	// 		assert(locs[5] == TYRRHENIAN_SEA);
+	// 		assert(locs[6] == VALONA);
+	// 		free(locs);
+	// 	}
 
-		{
-			printf("\tChecking Paris rail connections "
-			       "(Lord Godalming, Round 2)\n");
-			int numLocs = -1;
-			PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
-			                                     2, PARIS, false, true,
-			                                     false, &numLocs);
+	// 	{
+	// 		printf("\tChecking Paris rail connections "
+	// 		       "(Lord Godalming, Round 2)\n");
+	// 		int numLocs = -1;
+	// 		PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
+	// 		                                     2, PARIS, false, true,
+	// 		                                     false, &numLocs);
 			
-			assert(numLocs == 7);
-			sortPlaces(locs, numLocs);
-			assert(locs[0] == BORDEAUX);
-			assert(locs[1] == BRUSSELS);
-			assert(locs[2] == COLOGNE);
-			assert(locs[3] == LE_HAVRE);
-			assert(locs[4] == MARSEILLES);
-			assert(locs[5] == PARIS);
-			assert(locs[6] == SARAGOSSA);
-			free(locs);
-		}
+	// 		assert(numLocs == 7);
+	// 		sortPlaces(locs, numLocs);
+	// 		assert(locs[0] == BORDEAUX);
+	// 		assert(locs[1] == BRUSSELS);
+	// 		assert(locs[2] == COLOGNE);
+	// 		assert(locs[3] == LE_HAVRE);
+	// 		assert(locs[4] == MARSEILLES);
+	// 		assert(locs[5] == PARIS);
+	// 		assert(locs[6] == SARAGOSSA);
+	// 		free(locs);
+	// 	}
 		
-		{
-			printf("\tChecking Athens rail connections (none)\n");
-			int numLocs = -1;
-			PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
-			                                     1, ATHENS, false, true,
-			                                     false, &numLocs);
+	// 	{
+	// 		printf("\tChecking Athens rail connections (none)\n");
+	// 		int numLocs = -1;
+	// 		PlaceId *locs = GvGetReachableByType(gv, PLAYER_LORD_GODALMING,
+	// 		                                     1, ATHENS, false, true,
+	// 		                                     false, &numLocs);
 			
-			assert(numLocs == 1);
-			assert(locs[0] == ATHENS);
-			free(locs);
-		}
+	// 		assert(numLocs == 1);
+	// 		assert(locs[0] == ATHENS);
+	// 		free(locs);
+	// 	}
 		
-		GvFree(gv);
-		printf("Test passed!\n");
-	}
+	// 	GvFree(gv);
+	// 	printf("Test passed!\n");
+	// }
 
 	{///////////////////////////////////////////////////////////////////
 		printf("Additional test for Game History Part");
@@ -766,191 +766,257 @@ int main(void)
 		}
 	}
 
-	return EXIT_SUCCESS;
-
 	{///////////////////////////////////////////////////////////////////
 
-	printf("Additional testing for player, vampire and trap locations:\n");
-
-	{
-
-		printf("Testing empty trail.\n");
-
-		char *trail ="";
-
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);
-
-		assert(GvGetPlayerLocation(gv, PLAYER_DR_SEWARD) == NOWHERE);
-		assert(GvGetPlayerLocation(gv, PLAYER_VAN_HELSING) == NOWHERE);
-		assert(GvGetPlayerLocation(gv, PLAYER_MINA_HARKER) == NOWHERE);
-		assert(GvGetPlayerLocation(gv, PLAYER_DRACULA) == NOWHERE);
-		int numTraps = 0;
-		PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
-		assert(numTraps == 0);
-		sortPlaces(traps, numTraps);
-		free(traps);
-		GvFree(gv);	
-	}
-
-	printf("Testing vampire/trap locations.\n");
-
-	{
+		printf("Additional tests for player, vampire and trap locations.\n");
 		
-		char *trail =
-			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GSZ.... SGE.... HGE.... MGE....";
+		{
+
+			char *trail ="";
+
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+
+			assert(GvGetPlayerLocation(gv, PLAYER_DR_SEWARD) == NOWHERE);
+			assert(GvGetPlayerLocation(gv, PLAYER_VAN_HELSING) == NOWHERE);
+			assert(GvGetPlayerLocation(gv, PLAYER_MINA_HARKER) == NOWHERE);
+			assert(GvGetPlayerLocation(gv, PLAYER_DRACULA) == NOWHERE);
+			int numTraps = 0;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 0);
+			free(traps);
+			GvFree(gv);	
+		}
+
+		{
+			
+			char *trail =
+				"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GSZ.... SGE.... HGE.... MGE....";
+			
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			
+			int numTraps = 0;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 2);
+			sortPlaces(traps, numTraps);
+			assert(traps[0] == SOFIA && traps[1] == VALONA);
+			free(traps);
+			GvFree(gv);
 		
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);
+		}
+
+		{
+			
+			char *trail = 
+				"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GSZ.... SGE.... HGE.... MGE....";
+
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			
+			assert(GvGetVampireLocation(gv) == CASTLE_DRACULA);
+			int numTraps = 0;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 5);
+			sortPlaces(traps, numTraps);
+			assert(traps[0] == CASTLE_DRACULA &&
+				   traps[1] == SOFIA &&
+				   traps[2] == SOFIA && 
+				   traps[3] == VALONA && 
+				   traps[4] == VALONA);
+			free(traps); 
+			GvFree(gv);
+
+		}	
+
+		{
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DSTT... "
+				"GGE.... SGE.... HGE.... MGE.... DHIT... "
+				"GGE.... SGE.... HGE.... MGE.... DD1T... "
+				"GSTTTTD SGE.... HGE.... MGE....";
+
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);	
+				
+			int numTraps = 0;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 0);
+			free(traps); 
+			GvFree(gv);
+			
+		}
+
+		{
+
+			// immature vampire placed on a HIDE move
+			// (locations chosen are merely for testing purposes, 
+			//  disregards dracula's movement restrictions)
+
+			char *trail = 
+				"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DHI.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GSZ.... SGE.... HGE.... MGE....";
+
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			
+			assert(GvGetVampireLocation(gv) == VALONA);
+		}
+
+		{
+
+			// immature vampire placed on a DOUBLE_BACK move
+
+			char *trail = 
+				"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DSO.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GSZ.... SGE.... HGE.... MGE....";
+
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			
+			assert(GvGetVampireLocation(gv) == SOFIA);
+
+		}
+
+		{
+
+			// immature vampire and a trap vanquished in same location
+
+			char *trail = 
+				"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DVAT... "
+				"GVI.... SGE.... HGE.... MGE.... DCDT... "
+				"GBD.... SGE.... HGE.... MGE.... DSOT... "
+				"GSZ.... SGE.... HGE.... MGE.... DZAT... "
+				"GVI.... SGE.... HGE.... MGE.... DHI.V.. "
+				"GBD.... SGE.... HGE.... MGE.... DFLT... "
+				"GSZ.... SGE.... HZATV.. MGE.... DPRT... "
+				"GSZ.... SGE.... HGE.... MGE....";
+
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+			
+			assert(GvGetVampireLocation(gv) == NOWHERE);
+			int numTraps = 0;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 4);
+			sortPlaces(traps, numTraps);
+			assert(traps[0] == CASTLE_DRACULA);
+			assert(traps[1] == FLORENCE);
+			assert(traps[2] == PRAGUE);
+			assert(traps[3] == SOFIA);
+			free(traps); 
+			GvFree(gv);
+		}
 		
-		int numTraps = 0;
-		PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
-		assert(numTraps == 2);
-		sortPlaces(traps, numTraps);
-		assert(traps[0] == SOFIA && traps[1] == VALONA);
-		free(traps);
-		GvFree(gv);
+		{
+
+			// immature vampire and two traps vanquished in same location
+
+			char *trail =
+				"GLS.... SGE.... HGE.... MGE.... DST.V.. "
+				"GCA.... SGE.... HGE.... MGE.... DSTT... "
+				"GGR.... SGE.... HGE.... MGE.... DFRT... "
+				"GAL.... SGE.... HGE.... MGE.... DD2T... "
+				"GSR.... SGE.... HGE.... MGE.... DHI.... "
+				"GSN.... SGE.... HGE.... MGE.... DFRT... "
+				"GMA.... SSTTTV. HGE.... MGE....";
+			
+			Message messages[32] = {};
+			GameView gv = GvNew(trail, messages);
+
+			assert(GvGetVampireLocation(gv) == NOWHERE);
+			int numTraps = 0;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 2);
+			sortPlaces(traps, numTraps);
+			assert(traps[0] == FRANKFURT && traps[1] == FRANKFURT);
+			free(traps); 
+			GvFree(gv);
+
+		}
+
+		{
+
+			// Test for when Dracula starts at a sea location
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DNS.... "
+				"GST.... SST.... HST.... MST.... DEDT... "
+				"GST.... SST.... HST.... MST.... DLOT... "
+				"GST.... SST.... HST.... MST.... DHIT... "
+				"GST.... SLOT... HLOT... MST....";
+			
+			Message messages[24] = {};
+			GameView gv = GvNew(trail, messages);
+
+			assert(GvGetVampireLocation(gv) == NOWHERE);
+			int numTraps = -1;
+			PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
+			assert(numTraps == 1);
+			assert(traps[0] == EDINBURGH);
+			free(traps);
+			GvFree(gv);			
+
+		}
 	
 	}
 
-	{
-		
-		char *trail = 
-			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GSZ.... SGE.... HGE.... MGE....";
-
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);
-		
-		assert(GvGetVampireLocation(gv) == CASTLE_DRACULA);
-		int numTraps = 0;
-		PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
-		assert(numTraps == 5);
-		sortPlaces(traps, numTraps);
-		assert(traps[0] == CASTLE_DRACULA &&
-			   traps[1] == SOFIA &&
-			   traps[2] == SOFIA && 
-			   traps[3] == VALONA && 
-			   traps[4] == VALONA);
-		free(traps); 
-		GvFree(gv);
-
-	}	
-
-	{
-
-		char *trail =
-			"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
-			"GGE.... SGE.... HGE.... MGE.... DSTT... "
-			"GGE.... SGE.... HGE.... MGE.... DHIT... "
-			"GGE.... SGE.... HGE.... MGE.... DD1T... "
-			"GSTTTTD SGE.... HGE.... MGE....";
-
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);	
-			
-		int numTraps = 0;
-		PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
-		assert(numTraps == 0);
-		sortPlaces(traps, numTraps);
-		free(traps); 
-		GvFree(gv);
-		
-	}
-
-	{
-
-		char *trail =
-			"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
-			"GGE.... SGE.... HGE.... MGE.... DSTT... "
-			"GGE.... SGE.... HGE.... MGE.... DHIT... "
-			"GGE.... SGE.... HGE.... MGE.... DD1T... "
-			"GSTTTD.";
-
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);	
-			
-		int numTraps = 0;
-		PlaceId *traps = GvGetTrapLocations(gv, &numTraps);
-		assert(numTraps == 1);
-		sortPlaces(traps, numTraps);
-		free(traps); 
-		GvFree(gv);
-		
-	}
-
-	{
-
-		// immature vampire placed on a HIDE move
-
-		char *trail = 
-			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DHI.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GSZ.... SGE.... HGE.... MGE....";
-
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);
-		
-		assert(GvGetVampireLocation(gv) == VALONA);
-	}
-
-	{
-
-		// immature vampire placed on a DOUBLE_BACK move
-
-		char *trail = 
-			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DCDT... "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GVI.... SGE.... HGE.... MGE.... DD2.V.. "
-			"GBD.... SGE.... HGE.... MGE.... DSOT... "
-			"GSZ.... SGE.... HGE.... MGE.... DVAT... "
-			"GSZ.... SGE.... HGE.... MGE....";
-
-		Message messages[32] = {};
-		GameView gv = GvNew(trail, messages);
-		
-		assert(GvGetVampireLocation(gv) == SOFIA);
-
-	}
+	return EXIT_SUCCESS;
 	
 }

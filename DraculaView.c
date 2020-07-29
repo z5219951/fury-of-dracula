@@ -161,7 +161,7 @@ PlaceId DvGetVampireLocation(DraculaView dv)
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	// check dv is not NULL
 	assert(dv != NULL);
-	if (dv->num == 0) {
+	if (dv->num < 5) {
 		return NOWHERE;
 	}
 	bool canFree = 1;
@@ -179,7 +179,7 @@ PlaceId DvGetVampireLocation(DraculaView dv)
 	if (curr < 0) {
 		curr = 0;
 	}
-	int vampLoc = 0;
+	int vampLoc = -1;
 	for (int counter = 1; curr < dv->num; curr++, counter++) {
 		if (dv->Path[curr][0] == 'D' && 
 			dv->Path[curr][4] == 'V') {
@@ -190,6 +190,9 @@ PlaceId DvGetVampireLocation(DraculaView dv)
 			// immature vampire vanquished on hunter's turn
 			return NOWHERE;
 		}
+	}
+	if (vampLoc == -1) {
+		return NOWHERE;
 	}
 	PlaceId result = locations[vampLoc-1];
 	if (canFree) {
@@ -208,7 +211,6 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 	*numTraps = 0;
 	// dynamically allocated array for storing trap locations (if any)
 	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
-	
 	// get last 6 moves from Dracula
 	bool canFree = 1;
 	int numReturnedLocs;
@@ -223,53 +225,77 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 		curr = 0;
 	}
 	// array of locations to remove 
-	char remLoc[TRAIL_SIZE][3]; 
+	PlaceId *remLoc = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
+	char abbrevLoc[1][3];
 	int i = 0;
 	for (; curr < dv->num; curr++) {
 		// if trap encountered by Hunter
 		if (dv->Path[curr][3] == 'T' &&
 			dv->Path[curr][0] != 'D') {
-			remLoc[i][0] = dv->Path[curr][1];
-			remLoc[i][1] = dv->Path[curr][2];
-			remLoc[i][2] = '\0';
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			remLoc[i] = placeAbbrevToId(abbrevLoc[1]);
 			i++;
 		}
 		if (dv->Path[curr][4] == 'T' &&
 			dv->Path[curr][0] != 'D') {
-			remLoc[i][0] = dv->Path[curr][1];
-			remLoc[i][1] = dv->Path[curr][2];
-			remLoc[i][2] = '\0';
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			remLoc[i] = placeAbbrevToId(abbrevLoc[1]);
 			i++;
 		}
 		if (dv->Path[curr][5] == 'T' &&
 			dv->Path[curr][0] != 'D') {
-			remLoc[i][0] = dv->Path[curr][1];
-			remLoc[i][1] = dv->Path[curr][2];
-			remLoc[i][2] = '\0';
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			remLoc[i] = placeAbbrevToId(abbrevLoc[1]);
 			i++;
 		}
 		if (dv->Path[curr][4] == 'V' &&
 			dv->Path[curr][0] == 'D') {
-			remLoc[i][0] = dv->Path[curr][1];
-			remLoc[i][1] = dv->Path[curr][2];
-			remLoc[i][2] = '\0';
-			i++;
+			// remove loc from array
+			int roundCount = (curr / 5) - (round - numReturnedLocs);
+			locations[roundCount] = locations[*numTraps-1];
+			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
+			*numTraps -= 1;
+		}
+		else if (dv->Path[curr][3] == '.' &&
+				 dv->Path[curr][0] == 'D') {
+			// remove loc from array
+			int roundCount = curr / 5 - (round - numReturnedLocs);
+			locations[roundCount] = locations[*numTraps-1];
+			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
+			*numTraps -= 1;
+		} 
+		else if (dv->Path[curr][0] == 'D') { // Dracula is at sea
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			PlaceId atSea = placeAbbrevToId(abbrevLoc[1]);
+			if (placeIsSea(atSea)) {
+				// remove loc from array
+				int roundCount = curr / 5 - (round - numReturnedLocs);
+				locations[roundCount] = locations[*numTraps-1];
+				locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
+				*numTraps -= 1;
+				
+			}
 		}
 	}
-	int numLocs = numReturnedLocs;
 	for (int j = 0; j < i; j++) {
-		PlaceId locId = placeAbbrevToId(remLoc[j]);
-		for (int k = 0; k < numLocs; k++) {
-			if (locId == locations[k]) {
-				// remove loc from array
-				numLocs -= 1;
-				locations[k] = locations[numLocs];
-				locations = realloc(locations, sizeof(PlaceId)*numLocs);
+		for (int k = 0; k < *numTraps; k++) {
+			if (remLoc[j] == locations[k]) {
 				*numTraps -= 1;
+				locations[k] = locations[*numTraps];
+				locations = realloc(locations, sizeof(PlaceId)*(*numTraps));
 				break;
 			}
 		}
 	}
+	free(remLoc);
 	return locations;
 }
 

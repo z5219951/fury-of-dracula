@@ -113,58 +113,211 @@ int main(void)
 		DvFree(dv);
 	}
 	
+	// {///////////////////////////////////////////////////////////////////
+	
+	// 	printf("Test for Dracula's valid moves 1\n");
+		
+	// 	char *trail =
+	// 		"GGE.... SGE.... HGE.... MGE.... DCD.V.. "
+	// 		"GGE.... SGE.... HGE.... MGE....";
+		
+	// 	Message messages[9] = {};
+	// 	DraculaView dv = DvNew(trail, messages);
+		
+	// 	int numMoves = -1;
+	// 	PlaceId *moves = DvGetValidMoves(dv, &numMoves);
+	// 	assert(numMoves == 4);
+	// 	sortPlaces(moves, numMoves);
+	// 	assert(moves[0] == GALATZ);
+	// 	assert(moves[1] == KLAUSENBURG);
+	// 	assert(moves[2] == HIDE);
+	// 	assert(moves[3] == DOUBLE_BACK_1);
+	// 	free(moves);
+		
+	// 	printf("Test passed!\n");
+	// 	DvFree(dv);
+	// }
+	
+	// {///////////////////////////////////////////////////////////////////
+	
+	// 	printf("Test for DvWhereCanIGo 1\n");
+		
+	// 	char *trail =
+	// 		"GGE.... SGE.... HGE.... MGE.... DKL.V.. "
+	// 		"GGE.... SGE.... HGE.... MGE.... DD1T... "
+	// 		"GGE.... SGE.... HGE.... MGE.... DBCT... "
+	// 		"GGE.... SGE.... HGE.... MGE.... DHIT... "
+	// 		"GGE.... SGE.... HGE.... MGE....";
+		
+	// 	Message messages[24] = {};
+	// 	DraculaView dv = DvNew(trail, messages);
+		
+	// 	int numLocs = -1;
+	// 	PlaceId *locs = DvWhereCanIGo(dv, &numLocs);
+	// 	assert(numLocs == 4);
+	// 	sortPlaces(locs, numLocs);
+	// 	assert(locs[0] == BELGRADE);
+	// 	assert(locs[1] == CONSTANTA);
+	// 	assert(locs[2] == GALATZ);
+	// 	assert(locs[3] == SOFIA);
+	// 	free(locs);
+		
+	// 	printf("Test passed!\n");
+	// 	DvFree(dv);
+	// }
+
 	{///////////////////////////////////////////////////////////////////
-	
-		printf("Test for Dracula's valid moves 1\n");
-		
-		char *trail =
-			"GGE.... SGE.... HGE.... MGE.... DCD.V.. "
-			"GGE.... SGE.... HGE.... MGE....";
-		
-		Message messages[9] = {};
-		DraculaView dv = DvNew(trail, messages);
-		
-		int numMoves = -1;
-		PlaceId *moves = DvGetValidMoves(dv, &numMoves);
-		assert(numMoves == 4);
-		sortPlaces(moves, numMoves);
-		assert(moves[0] == GALATZ);
-		assert(moves[1] == KLAUSENBURG);
-		assert(moves[2] == HIDE);
-		assert(moves[3] == DOUBLE_BACK_1);
-		free(moves);
-		
-		printf("Test passed!\n");
-		DvFree(dv);
-	}
-	
-	{///////////////////////////////////////////////////////////////////
-	
-		printf("Test for DvWhereCanIGo 1\n");
-		
-		char *trail =
-			"GGE.... SGE.... HGE.... MGE.... DKL.V.. "
-			"GGE.... SGE.... HGE.... MGE.... DD1T... "
-			"GGE.... SGE.... HGE.... MGE.... DBCT... "
-			"GGE.... SGE.... HGE.... MGE.... DHIT... "
-			"GGE.... SGE.... HGE.... MGE....";
-		
-		Message messages[24] = {};
-		DraculaView dv = DvNew(trail, messages);
-		
-		int numLocs = -1;
-		PlaceId *locs = DvWhereCanIGo(dv, &numLocs);
-		assert(numLocs == 4);
-		sortPlaces(locs, numLocs);
-		assert(locs[0] == BELGRADE);
-		assert(locs[1] == CONSTANTA);
-		assert(locs[2] == GALATZ);
-		assert(locs[3] == SOFIA);
-		free(locs);
-		
-		printf("Test passed!\n");
-		DvFree(dv);
+
+		printf("Additional tests for player, vampire and trap locations.\n");
+
+		{
+
+			// Test for just before Dracula's first move
+
+			char *trail =
+				"GBU.... SCO.... HDU.... MHA....";
+			
+			Message messages[] = {};
+			DraculaView dv = DvNew(trail, messages);
+			
+			assert(DvGetPlayerLocation(dv, PLAYER_LORD_GODALMING) == BRUSSELS);
+			assert(DvGetPlayerLocation(dv, PLAYER_DR_SEWARD) == COLOGNE);
+			assert(DvGetPlayerLocation(dv, PLAYER_VAN_HELSING) == DUBLIN);
+			assert(DvGetPlayerLocation(dv, PLAYER_MINA_HARKER) == HAMBURG);
+			assert(DvGetPlayerLocation(dv, PLAYER_DRACULA) == NOWHERE);
+			assert(DvGetVampireLocation(dv) == NOWHERE);
+			int numTraps = -1;
+			PlaceId *traps = DvGetTrapLocations(dv, &numTraps);
+			assert(numTraps == 0);
+			free(traps);
+			DvFree(dv);
+
+		}
+
+		{
+
+			// Test for hunter encountering trap, vampire and Dracula
+
+			char *trail =
+				"GST.... SAO.... HCD.... MAO.... DGE.V.. "
+				"GST.... SAO.... HCD.... MAO.... DGET... "
+				"GGETVD. SAO.... HCD.... MAO....";
+			
+			Message messages[] = {};
+			DraculaView dv = DvNew(trail, messages);
+
+			assert(DvGetPlayerLocation(dv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(DvGetPlayerLocation(dv, PLAYER_DRACULA) == GENEVA);
+			assert(DvGetVampireLocation(dv) == NOWHERE);
+			int numTraps = -1;
+			PlaceId *traps = DvGetTrapLocations(dv, &numTraps);
+			assert(numTraps == 0);
+			free(traps);
+			DvFree(dv);
+			
+		}
+
+		{
+
+			// Test for vampire and trap locations 
+
+			char *trail =
+				"GST.... SAO.... HCD.... MAO.... DGE.V.. "
+				"GST.... SAO.... HCD.... MAO.... DGET... "
+				"GST.... SAO.... HCD.... MAO.... DHIT... "
+				"GST.... SAO.... HCD.... MAO.... DPAT... "
+				"GGEV... SAO.... HCD.... MAO.... ";
+			
+			Message messages[] = {};
+			DraculaView dv = DvNew(trail, messages);
+
+			assert(DvGetPlayerLocation(dv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(DvGetPlayerLocation(dv, PLAYER_DRACULA) == PARIS);
+			assert(DvGetVampireLocation(dv) == NOWHERE);
+			int numTraps = -1;
+			PlaceId *traps = DvGetTrapLocations(dv, &numTraps);
+			assert(numTraps == 3);
+			sortPlaces(traps, numTraps);
+			assert(traps[0] == GENEVA &&
+				   traps[1] == GENEVA &&
+				   traps[2] == PARIS);
+			free(traps);
+			DvFree(dv);
+
+		}
+
+		{
+
+			// Test for traps encountered consectively
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DED.V.. "
+				"GST.... SST.... HST.... MST.... DMNT... "
+				"GST.... SST.... HST.... MST.... DLOT... "
+				"GST.... SST.... HST.... MST.... DHIT... "
+				"GMNT... SLOT... HLOT... MST....";
+			
+			Message messages[24] = {};
+			DraculaView dv = DvNew(trail, messages);
+
+			assert(DvGetVampireLocation(dv) == EDINBURGH);
+			int numTraps = -1;
+			PlaceId *traps = DvGetTrapLocations(dv, &numTraps);
+			assert(numTraps == 0);
+			free(traps);
+			DvFree(dv);			
+
+		}
+
+		{
+
+			// Test for when Dracula starts at a sea location
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DNS.... "
+				"GST.... SST.... HST.... MST.... DEDT... "
+				"GST.... SST.... HST.... MST.... DLOT... "
+				"GST.... SST.... HST.... MST.... DHIT... "
+				"GST.... SLOT... HLOT... MST....";
+			
+			Message messages[24] = {};
+			DraculaView dv = DvNew(trail, messages);
+
+			assert(DvGetVampireLocation(dv) == NOWHERE);
+			int numTraps = -1;
+			PlaceId *traps = DvGetTrapLocations(dv, &numTraps);
+			assert(numTraps == 1);
+			assert(traps[0] == EDINBURGH);
+			free(traps);
+			DvFree(dv);			
+
+		}
+
+		{
+
+			// Test for when Dracula moves to a sea location
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DED.V.. "
+				"GST.... SST.... HST.... MST.... DNS.... "
+				"GST.... SST.... HST.... MST.... DLOT... "
+				"GST.... SST.... HST.... MST.... DHIT... "
+				"GST.... SLOT... HLOT... MST....";
+			
+			Message messages[24] = {};
+			DraculaView dv = DvNew(trail, messages);
+
+			assert(DvGetVampireLocation(dv) == EDINBURGH);
+			int numTraps = -1;
+			PlaceId *traps = DvGetTrapLocations(dv, &numTraps);
+			assert(numTraps == 0);
+			free(traps);
+			DvFree(dv);			
+
+		}
+
 	}
 
 	return EXIT_SUCCESS;
+
 }
