@@ -20,6 +20,7 @@
 
 #include "Game.h"
 #include "Places.h"
+#include "Map.h"
 // add your own #includes here
 
 typedef struct gameView *GameView;
@@ -253,6 +254,10 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
+
+PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city);
+PlaceId *MergeList(PlaceId *list1, PlaceId *list2);
+int GetLenOfList(PlaceId *list);
 
 // TODO
 
