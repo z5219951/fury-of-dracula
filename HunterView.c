@@ -40,6 +40,9 @@ typedef struct huntPlace {
 	int levelFinish;
 	int round;
 	int player;
+	int road;
+	int boat;
+	int rail;
 } *HunterReach;
 // change hunter adt into gameview adt
 static GameView hunterToGame(HunterView hv);
@@ -58,6 +61,14 @@ static bool connectCheck(HunterView hv, HunterReach placeList,PlaceId src, Place
 
 // clean placeList
 static void cleanplaceLis(HunterReach placeList);
+
+// check repeat places
+static int checkPlaceRe(PlaceId *list, int len, PlaceId target);
+
+// set default type
+int MYBOAT = 1;
+int MYRAIL = 1;
+int MYROAD = 1;
 ////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 
@@ -246,6 +257,9 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 	placeList->railNum = (hunter + round)%4;
 	placeList->totalNum = 0;
 	placeList->start = startId;
+	MYBOAT = 1;
+	MYRAIL = 1;
+	MYROAD = 1;
 	cleanplaceLis(placeList);
 	// find shortest path
 	findshort(hv, placeList,dest);
@@ -263,16 +277,159 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	*numReturnedLocs = 0;
-	return NULL;
+	// check whether the Player has moved
+	// transform hv to gv
+	GameView trans = hunterToGame(hv);
+	Player hunter = hv->num%5;
+	if (hunter == 4) {
+		hunter = PLAYER_LORD_GODALMING;
+	}
+	// get result from GvGetLastLocations
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *lastPlace = GvGetLastLocations(trans, hunter,1, &numReturn, &canFree);
+	// if current player hasn't moved yet
+	if (numReturn == 0) {
+		*numReturnedLocs = 0;
+		return NULL;
+	}
+
+	PlaceId startId = lastPlace[0];
+	int maxLen = MapNumPlaces(hv->map);
+	HunterReach placeList = malloc(sizeof(HunterReach));
+	int lenNum = 0;
+
+	// set default value in placeList
+	placeList->places = calloc(maxLen, sizeof(PlaceId));
+	int round = (hv->num)/5;
+	placeList->round = round;
+	placeList->player = hunter;
+	placeList->railNum = (hunter + round)%4;
+	placeList->totalNum = 0;
+	placeList->start = startId;
+	//set type
+	MYBOAT = 1;
+	MYRAIL = 1;
+	MYROAD = 1;
+
+	cleanplaceLis(placeList);
+
+	int *levelRecord = calloc(maxLen,sizeof(int));
+	for (int i = 0; i < maxLen; i++) {
+		levelRecord[i] = -1;
+	}
+	levelRecord[startId] = placeList->round;
+
+	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+
+	// check road and sea
+	int originRail = placeList->railNum;
+	PlaceId originStart = placeList->start;
+	placeList->places[startId] = startId;
+	reachPlacesRoad(hv,placeList,startId,levelRecord);
+	placeList->places[startId] = -1;
+	for (int i = 0; i < maxLen; i++) {
+		if (placeList->places[i] != -1) {
+			result[lenNum] = i;
+			lenNum++;
+		}
+	}
+	cleanplaceLis(placeList);
+
+	// check rail
+	placeList->railNum = originRail;
+	placeList->start = originStart;
+	placeList->places[startId] = startId;
+	reachPlacesRail(hv,placeList,startId,levelRecord);
+	placeList->places[startId] = -1;
+	for (int i = 0; i < maxLen; i++) {
+		if (placeList->places[i] != -1 && checkPlaceRe(result, lenNum, i) == 1) {
+			result[lenNum] = i;
+			lenNum++;
+		}
+	}
+	cleanplaceLis(placeList);
+	*numReturnedLocs = lenNum;
+	return result;
 }
 
 PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
                              bool boat, int *numReturnedLocs)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	*numReturnedLocs = 0;
-	return NULL;
+	GameView trans = hunterToGame(hv);
+	Player hunter = hv->num%5;
+	if (hunter == 4) {
+		hunter = PLAYER_LORD_GODALMING;
+	}
+	// get result from GvGetLastLocations
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *lastPlace = GvGetLastLocations(trans, hunter,1, &numReturn, &canFree);
+	// if current player hasn't moved yet
+	if (numReturn == 0) {
+		*numReturnedLocs = 0;
+		return NULL;
+	}
+
+	PlaceId startId = lastPlace[0];
+	int maxLen = MapNumPlaces(hv->map);
+	HunterReach placeList = malloc(sizeof(HunterReach));
+	int lenNum = 0;
+
+	// set default value in placeList
+	placeList->places = calloc(maxLen, sizeof(PlaceId));
+	int round = (hv->num)/5;
+	placeList->round = round;
+	placeList->player = hunter;
+	placeList->railNum = (hunter + round)%4;
+	placeList->totalNum = 0;
+	placeList->start = startId;
+
+	cleanplaceLis(placeList);
+
+	int *levelRecord = calloc(maxLen,sizeof(int));
+	for (int i = 0; i < maxLen; i++) {
+		levelRecord[i] = -1;
+	}
+	levelRecord[startId] = placeList->round;
+
+	PlaceId *result = malloc(sizeof(PlaceId)*maxLen);
+
+	int originRail = placeList->railNum;
+	PlaceId originStart = placeList->start;
+	placeList->places[startId] = startId;
+	// check road and sea
+	//set type
+
+	MYBOAT = boat;
+	MYRAIL = rail;
+	MYROAD = road;
+
+	reachPlacesRoad(hv,placeList,startId,levelRecord);
+	placeList->places[startId] = -1;
+	for (int i = 0; i < maxLen; i++) {
+		if (placeList->places[i] != -1) {
+			result[lenNum] = i;
+			lenNum++;
+		}
+	}
+	cleanplaceLis(placeList);
+
+	// check rail
+	placeList->railNum = originRail;
+	placeList->start = originStart;
+	placeList->places[startId] = startId;
+	reachPlacesRail(hv,placeList,startId,levelRecord);
+	placeList->places[startId] = -1;
+	for (int i = 0; i < maxLen; i++) {
+		if (placeList->places[i] != -1 && checkPlaceRe(result, lenNum, i) == 1) {
+			result[lenNum] = i;
+			lenNum++;
+		}
+	}
+	cleanplaceLis(placeList);
+	*numReturnedLocs = lenNum;
+	return result;
 }
 
 PlaceId *HvWhereCanTheyGo(HunterView hv, Player player,
@@ -316,6 +473,17 @@ static void reachPlacesRoad(HunterView hv, HunterReach placeList, PlaceId p, int
 	for (ConnList i = current; i != NULL; i = i->next) {
 		// only accept no rail type
 		if (i->type != RAIL) {
+			if (i->type == ROAD) {
+				if (!MYROAD) {
+					continue;
+				}
+			}
+			if ((i->type == BOAT)) {
+				if (!MYBOAT) {
+					continue;
+				}
+				
+			}
 			if (placeList->places[i->p] == -1) {
 				if (levelRecord[i->p] == -1) {
 					levelRecord[i->p] = levelRecord[originStart] + 1;
@@ -337,7 +505,7 @@ static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int
 	// all location come from the same start place
 	PlaceId originStart = placeList->start;
 	for (ConnList i = current; i != NULL; i = i->next) {
-		if (i->type == RAIL) {
+		if (i->type == RAIL && MYRAIL) {
 			if (placeList->places[i->p] == -1) {
 				if (levelRecord[i->p] == -1) {
 					levelRecord[i->p] = levelRecord[originStart] + 1;
@@ -447,6 +615,19 @@ static void cleanplaceLis(HunterReach placeList) {
 	}
 	placeList->totalNum = 0;
 }
+// check repeat place
+static int checkPlaceRe(PlaceId *list, int len, PlaceId target) {
+	if (!len) {
+		return 1;
+	}
+	for (int i = 0; i< len; i++) {
+		if (list[i] == target) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 // TODO
 int HvGetRoundHealth(HunterView hv, Player player, int health, int round) {
 	assert(hv != NULL);
