@@ -277,6 +277,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 	}
 
 	PlaceId *result = malloc(sizeof(PlaceId) * counter);
+
 	// If current player is dracula
 	if (player == PLAYER_DRACULA) {
 		// If dracula has not made a move yet
@@ -345,7 +346,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			// If current adjacent city satisfy conditon
 			if (curr->type == ROAD && repeated_city[curr->p] == 0) {
 				result[index++] = curr->p;
-				result[index] = 999;
+				result[index] =	999;
 				repeated_city[curr->p] = 1;
 			}
 			else if (curr->type == BOAT && repeated_city[curr->p] == 0)  {
@@ -371,7 +372,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				result[index] = 999;
 				repeated_city[curr->p] = 1;
 			}
-			if (curr->type == BOAT) {
+			else if (curr->type == BOAT) {
 				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
@@ -379,7 +380,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 					repeated_city[curr->p] = 1;
 				}
 				// From port city to adjacent sea
-				if (placeIsLand(from) && placeIsSea(curr->p)) {
+				else if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
 					result[index] = 999;
 					repeated_city[curr->p] = 1;
@@ -388,6 +389,10 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			curr = curr->next;
 		}
 		if (RailList != NULL) {
+			if (index == 0) {
+				*numReturnedLocs = GetLenOfList(RailList);
+				return RailList;
+			}
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
@@ -551,6 +556,10 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			curr = curr->next;
 		}
 		if (rail == true && RailList != NULL) {
+			if (index == 0) {
+				*numReturnedLocs = GetLenOfList(RailList);
+				return RailList;
+			}
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
@@ -600,6 +609,7 @@ PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city
 			repeated_city[i] = 1;
 		}
 	}
+
 	if (max_distance == 1) {
 		for (int i = 0; i < n; i++) {
 			if (distance[i] == 1) {
@@ -644,7 +654,7 @@ PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
 // The list should end with '\0'
 int GetLenOfList(PlaceId *list) {
 	int i = 0;
-	while (list[i] != 999) {
+	while (list[i] < 999) {
 		i++;
 	}
 	return i;
