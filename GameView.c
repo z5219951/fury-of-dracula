@@ -263,7 +263,6 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 	if (round == 0) {
 		return NULL;
 	}
-	
 	int n = MapNumPlaces(gv->map);
 	// Two cities may be connected through multiple ways
 	// The following array is to avoid the same city be added
@@ -275,14 +274,15 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		counter++;
 		curr = curr->next;
 	}
-
-	PlaceId *result = malloc(sizeof(PlaceId) * counter);
-
+	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
+	// Add the given place into array
+	result[0] = from;
+	result[1] = 999;
 	// If current player is dracula
 	if (player == PLAYER_DRACULA) {
-		// If dracula has not made a move yet
+		// Test Connection
 		if (round == 1) {
-			int index = 0;
+			int index = 1;
 			curr = MapGetConnections(gv->map, from);
 			while (curr != NULL) {
 				if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0) {
@@ -311,8 +311,13 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			}
 		}
 		// Check whether a adjacent city satisfy condition
-		int index = 0;
+		int index = 1;
 		int round_temp;
+		if (round < 6) {
+			round_temp = round - 1;
+		} else {
+			round_temp = 5;
+		}
 		curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
 			// Dracula can not move through rail
@@ -326,11 +331,6 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 				continue;
 			} 
 			bool hasRepeatedMove = false;
-			if (round < 6) {
-				round_temp = round - 1;
-			} else {
-				round_temp = 5;
-			}
 			// Check if dracula has made the same location move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
 				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
@@ -359,7 +359,7 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 		*numReturnedLocs = GetLenOfList(result);		
 	} else {
 		curr = MapGetConnections(gv->map, from);
-		int index = 0;
+		int index = 1;
 		int max_distance = (round + player) % 4;
 		PlaceId *RailList = GetConnRail(gv->map, from, max_distance, repeated_city);
 		while (curr != NULL) {
@@ -389,10 +389,6 @@ PlaceId *GvGetReachable(GameView gv, Player player, Round round,
 			curr = curr->next;
 		}
 		if (RailList != NULL) {
-			if (index == 0) {
-				*numReturnedLocs = GetLenOfList(RailList);
-				return RailList;
-			}
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
@@ -405,8 +401,14 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
                               bool boat, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	if (gv == NULL || gv->num == 0 || round == 0) {
+	if (round == 0) {
 		return NULL;
+	}
+	if (road == false && rail == false && boat == false) {
+		PlaceId *result = malloc(sizeof(PlaceId) * 2);
+		result[0] = from;
+		result[1] = 999;
+		return result;
 	}
 	int n = MapNumPlaces(gv->map);
 	// Two cities may be connected through multiple ways
@@ -420,11 +422,14 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		counter++;
 		curr = curr->next;
 	}
-	PlaceId *result = malloc(sizeof(PlaceId) * counter);
-	
+	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
+	// Add the given place into array
+	result[0] = from;
+	result[1] = 999;
 	if (player == PLAYER_DRACULA) {
+		// Test connection
 		if (round == 1) {
-			int index = 0;
+			int index = 1;
 			curr = MapGetConnections(gv->map, from);
 			while (curr != NULL) {
 				if (curr->type == ROAD && road == true) {
@@ -455,8 +460,13 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			}
 		}
 		// Check whether a adjacent city satisfy condition
-		int index = 0;
-		int round_temp = round;
+		int index = 1;
+		int round_temp;
+		if (round < 6) {
+			round_temp = round;
+		} else {
+			round_temp = 5;
+		}
 		curr = MapGetConnections(gv->map, from);
 		while (curr != NULL) {
 			// If the adjacent city is hospital
@@ -470,18 +480,13 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 				continue;
 			}
 			bool hasRepeatedMove = false;
-			if (round < 6) {
-				round_temp = round;
-			} else {
-				round_temp = 5;
-			}
 			// Check if dracula has made the same location move in the past 5 rounds
 			for (int i = 0; i < round_temp; i++) {
 				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
 					hasRepeatedMove = true;
 				}
 			}
-			// if dracula has made the same move in the past 5 rounds
+			// If dracula has made the same move in the past 5 rounds
 			if (hasRepeatedMove) {
 				curr = curr->next;
 				continue;
@@ -501,33 +506,13 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		}
 		*numReturnedLocs = GetLenOfList(result);
 	} else {
-		if (round == 1) {
-			int index = 0;
-			curr = MapGetConnections(gv->map, from);
-			while (curr != NULL) {
-				if (curr->type == ROAD && road == true) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					curr = curr->next;
-				}
-				else if (curr->type == BOAT && boat == true) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					curr = curr->next;
-				}
-				else if (curr->type == RAIL && rail == true) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					curr = curr->next;
-				}
-			}
-			*numReturnedLocs = index;
-			return result;
-		}
 		curr = MapGetConnections(gv->map, from);
-		int index = 0;
+		int index = 1;
 		int max_distance = (round + player) % 4;
-		PlaceId *RailList = GetConnRail(gv->map, from, max_distance, repeated_city);
+		PlaceId *RailList = NULL;
+		if (rail == true) {
+			RailList = GetConnRail(gv->map, from, max_distance, repeated_city);
+		}
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -537,9 +522,8 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 				result[index++] = curr->p;
 				result[index] = 999;
 				repeated_city[curr->p] = 1;
-
 			}
-			if (curr->type == BOAT && boat == true) {
+			else if (curr->type == BOAT && boat == true) {
 				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
@@ -547,7 +531,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 					repeated_city[curr->p] = 1;
 				}
 				// From port city to adjaceent sea
-				if (placeIsLand(from) && placeIsSea(curr->p)) {
+				else if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
 					result[index] = 999;
 					repeated_city[curr->p] = 1;
@@ -556,10 +540,6 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 			curr = curr->next;
 		}
 		if (rail == true && RailList != NULL) {
-			if (index == 0) {
-				*numReturnedLocs = GetLenOfList(RailList);
-				return RailList;
-			}
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
@@ -603,7 +583,7 @@ PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city
 
 	PlaceId *list = malloc(sizeof(PlaceId) * (n + 1));
 	int counter = 0;
-	// make sure that there is no repeated city in returned list of GvGetReachable
+	// Make sure that there is no repeated city in returned array of GvGetReachable
 	for (int i = 0; i < n; i++) {
 		if (distance[i] == 1) {
 			repeated_city[i] = 1;
