@@ -383,7 +383,6 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 	PlaceId originStart = placeList->start;
 	placeList->places[startId] = startId;
 	reachPlacesRoad(hv,placeList,startId,levelRecord);
-	placeList->places[startId] = -1;
 	for (int i = 0; i < maxLen; i++) {
 		if (placeList->places[i] != -1) {
 			result[lenNum] = i;
@@ -405,8 +404,6 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 		}
 	}
 	cleanplaceLis(placeList);
-	result[lenNum] = startId;
-	lenNum++;
 	*numReturnedLocs = lenNum;
 	return result;
 }
@@ -469,7 +466,6 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	MYROAD = road;
 
 	reachPlacesRoad(hv,placeList,startId,levelRecord);
-	placeList->places[startId] = -1;
 	for (int i = 0; i < maxLen; i++) {
 		if (placeList->places[i] != -1) {
 			result[lenNum] = i;
@@ -491,8 +487,6 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 		}
 	}
 	cleanplaceLis(placeList);
-	result[lenNum] = startId;
-	lenNum++;
 	*numReturnedLocs = lenNum;
 	MYBOAT = 1;
 	MYRAIL = 1;

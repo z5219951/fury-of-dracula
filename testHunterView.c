@@ -711,9 +711,9 @@ int main(void)
 			assert(pathLength == 5);
 			assert(path[0] == ATLANTIC_OCEAN);
 			assert(path[1] == CADIZ);
-			assert(path[2] == MADRID);
-			assert(path[3] == SANTANDER);
-			assert(path[4] == LISBON);
+			assert(path[2] == LISBON);
+			assert(path[3] == MADRID);
+			assert(path[4] == SANTANDER);
 
 			printf("Test passed!\n");
 			free(path);
@@ -747,9 +747,9 @@ int main(void)
 			assert(pathLength == 5);
 			assert(path[0] == ATLANTIC_OCEAN);
 			assert(path[1] == CADIZ);
-			assert(path[2] == MADRID);
-			assert(path[3] == SANTANDER);
-			assert(path[4] == LISBON);
+			assert(path[2] == LISBON);
+			assert(path[3] == MADRID);
+			assert(path[4] == SANTANDER);
 
 			printf("Test passed!\n");
 			free(path);
@@ -765,8 +765,8 @@ int main(void)
 			int pathLength = -1;
 			PlaceId *path = HvWhereCanIGoByType(hv,false, true, false, &pathLength);
 			assert(pathLength == 2);
-			assert(path[0] == MADRID);
-			assert(path[1] == LISBON);
+			assert(path[0] == LISBON);
+			assert(path[1] == MADRID);
 			printf("Test passed!\n");
 			free(path);
 		}
@@ -782,9 +782,9 @@ int main(void)
 			PlaceId *path = HvWhereCanIGoByType(hv,true, true, false, &pathLength);
 			assert(pathLength == 4);
 			assert(path[0] == CADIZ);
-			assert(path[1] == MADRID);
-			assert(path[2] == SANTANDER);
-			assert(path[3] == LISBON);
+			assert(path[1] == LISBON);
+			assert(path[2] == MADRID);
+			assert(path[3] == SANTANDER);
 			printf("Test passed!\n");
 			free(path);
 		}
