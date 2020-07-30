@@ -61,6 +61,9 @@ static bool connectCheck(HunterView hv, HunterReach placeList,PlaceId src, Place
 // clean placeList
 static void cleanplaceLis(HunterReach placeList);
 
+// free placeList
+static void freePlaceLis(HunterReach placeList);
+
 // check repeat places
 static int checkPlaceRe(PlaceId *list, int len, PlaceId target);
 
@@ -405,6 +408,7 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 	}
 	cleanplaceLis(placeList);
 	*numReturnedLocs = lenNum;
+	freePlaceLis(placeList);
 	return result;
 }
 
@@ -491,6 +495,7 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	MYBOAT = 1;
 	MYRAIL = 1;
 	MYROAD = 1;
+	freePlaceLis(placeList);
 	return result;
 }
 
@@ -930,6 +935,11 @@ static int checkPlaceRe(PlaceId *list, int len, PlaceId target) {
 		}
 	}
 	return 1;
+}
+
+// free placeList
+static void freePlaceLis(HunterReach placeList){
+	free(placeList);
 }
 
 // TODO
