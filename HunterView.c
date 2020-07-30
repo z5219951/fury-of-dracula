@@ -436,27 +436,8 @@ PlaceId *HvWhereCanTheyGo(HunterView hv, Player player,
                           int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	// check whether the Player has moved
-	// transform hv to gv
-	GameView trans = hunterToGame(hv);
-	// get result from GvGetLastLocations
-	int numReturn = 0;
-	bool canFree = false;
-	PlaceId *lastPlace = GvGetLastLocations(trans, player,1, &numReturn, &canFree);
-	// if current player hasn't moved yet
-	if (numReturn == 0 || lastPlace[0] == CITY_UNKNOWN) {
-		*numReturnedLocs = 0;
-		return NULL;
-	}
-	int currentPlay = (hv->num)%5;
-	int round = (hv->num)/5;
-	if (currentPlay != player) {
-		round+=1;
-	}
-	int testReturn;
-	PlaceId *result = GvGetReachable(trans,currentPlay, round,lastPlace[0], &testReturn);
-	*numReturnedLocs = testReturn;
-	return result;
+	*numReturnedLocs = 0;
+	return NULL;
 
 	
 }
@@ -466,27 +447,8 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
                                 int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	// check whether the Player has moved
-	// transform hv to gv
-	GameView trans = hunterToGame(hv);
-	// get result from GvGetLastLocations
-	int numReturn = 0;
-	bool canFree = false;
-	PlaceId *lastPlace = GvGetLastLocations(trans, player,1, &numReturn, &canFree);
-	// if current player hasn't moved yet
-	if (numReturn == 0 || lastPlace[0] == CITY_UNKNOWN) {
-		*numReturnedLocs = 0;
-		return NULL;
-	}
-	int currentPlay = (hv->num)%5;
-	int round = (hv->num)/5;
-	if (currentPlay != player) {
-		round+=1;
-	}
-	int testReturn;
-	PlaceId *result = GvGetReachableByType(trans,currentPlay, round,lastPlace[0],road,rail, boat,&testReturn);
-	*numReturnedLocs = testReturn;
-	return result;
+	*numReturnedLocs = 0;
+	return NULL;
 	
 }
 
