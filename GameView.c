@@ -187,7 +187,6 @@ PlaceId GvGetVampireLocation(GameView gv)
 	if (numReturnedLocs == 0) {
 		return NOWHERE;
 	}
-	// get current round
 	Round round = GvGetRound(gv);
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
@@ -224,7 +223,6 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 		return NULL;
 	}
 	*numTraps = 0;
-	// dynamically allocated array for storing trap locations (if any)
 	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
 	int player = GvGetPlayer(gv);
 	// if not Dracula's turn
@@ -232,7 +230,7 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 		printf("Cannot determine trap locations.\n");
 		return locations;
 	}
-	// get last 6 moves from Dracula
+	// get last 6 Dracula locations
 	bool canFree = 1;
 	static int numReturnedLocs;
 	locations = GvGetLastLocations(gv, PLAYER_DRACULA, TRAIL_SIZE, 
@@ -249,9 +247,8 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 	char abbrevLoc[1][3];
 	int i = 0;
 	for (; curr < gv->num; curr++) {
-		// if trap encountered by Hunter
 		if (gv->Path[curr][3] == 'T' &&
-			gv->Path[curr][0] != 'D') {
+			gv->Path[curr][0] != 'D') { // trap encountered by Hunter
 			abbrevLoc[1][0] = gv->Path[curr][1];
 			abbrevLoc[1][1] = gv->Path[curr][2];	
 			abbrevLoc[1][2] = '\0';
@@ -275,28 +272,25 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 			i++;
 		}
 		if (gv->Path[curr][4] == 'V' &&
-			gv->Path[curr][0] == 'D') {
-			// remove loc from array
+			gv->Path[curr][0] == 'D') { // loc of immature vampire
 			int roundCount = (curr / 5) - (round - numReturnedLocs);
 			locations[roundCount] = locations[*numTraps-1];
 			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
 			*numTraps -= 1;
 		}
 		else if (gv->Path[curr][3] == '.' &&
-				 gv->Path[curr][0] == 'D') {
-			// remove loc from array
+				 gv->Path[curr][0] == 'D') { // no trap placed
 			int roundCount = curr / 5 - (round - numReturnedLocs);
 			locations[roundCount] = locations[*numTraps-1];
 			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
 			*numTraps -= 1;
 		} 
-		else if (gv->Path[curr][0] == 'D') { // Dracula is at sea
+		else if (gv->Path[curr][0] == 'D') {
 			abbrevLoc[1][0] = gv->Path[curr][1];
 			abbrevLoc[1][1] = gv->Path[curr][2];	
 			abbrevLoc[1][2] = '\0';
 			PlaceId atSea = placeAbbrevToId(abbrevLoc[1]);
-			if (placeIsSea(atSea)) {
-				// remove loc from array
+			if (placeIsSea(atSea)) { // Dracula is at sea
 				int roundCount = curr / 5 - (round - numReturnedLocs);
 				locations[roundCount] = locations[*numTraps-1];
 				locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
@@ -305,6 +299,7 @@ PlaceId *GvGetTrapLocations(GameView gv, int *numTraps)
 			}
 		}
 	}
+	// remove encountered traps
 	for (int j = 0; j < i; j++) {
 		for (int k = 0; k < *numTraps; k++) {
 			if (remLoc[j] == locations[k]) {

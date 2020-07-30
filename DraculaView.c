@@ -172,7 +172,6 @@ PlaceId DvGetVampireLocation(DraculaView dv)
 	if (numReturnedLocs == 0) {
 		return NOWHERE;
 	}
-	// get current round
 	Round round = DvGetRound(dv);
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
@@ -209,9 +208,8 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 		return NULL;
 	}
 	*numTraps = 0;
-	// dynamically allocated array for storing trap locations (if any)
 	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
-	// get last 6 moves from Dracula
+	// get last 6 Dracula locations
 	bool canFree = 1;
 	int numReturnedLocs;
 	GameView trans = draculaToGame(dv);
@@ -229,9 +227,8 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 	char abbrevLoc[1][3];
 	int i = 0;
 	for (; curr < dv->num; curr++) {
-		// if trap encountered by Hunter
 		if (dv->Path[curr][3] == 'T' &&
-			dv->Path[curr][0] != 'D') {
+			dv->Path[curr][0] != 'D') { // trap encountered by Hunter
 			abbrevLoc[1][0] = dv->Path[curr][1];
 			abbrevLoc[1][1] = dv->Path[curr][2];	
 			abbrevLoc[1][2] = '\0';
@@ -255,28 +252,25 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 			i++;
 		}
 		if (dv->Path[curr][4] == 'V' &&
-			dv->Path[curr][0] == 'D') {
-			// remove loc from array
+			dv->Path[curr][0] == 'D') { // loc of immature vampire
 			int roundCount = (curr / 5) - (round - numReturnedLocs);
 			locations[roundCount] = locations[*numTraps-1];
 			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
 			*numTraps -= 1;
 		}
 		else if (dv->Path[curr][3] == '.' &&
-				 dv->Path[curr][0] == 'D') {
-			// remove loc from array
+				 dv->Path[curr][0] == 'D') { // no trap placed
 			int roundCount = curr / 5 - (round - numReturnedLocs);
 			locations[roundCount] = locations[*numTraps-1];
 			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
 			*numTraps -= 1;
 		} 
-		else if (dv->Path[curr][0] == 'D') { // Dracula is at sea
+		else if (dv->Path[curr][0] == 'D') {
 			abbrevLoc[1][0] = dv->Path[curr][1];
 			abbrevLoc[1][1] = dv->Path[curr][2];	
 			abbrevLoc[1][2] = '\0';
 			PlaceId atSea = placeAbbrevToId(abbrevLoc[1]);
-			if (placeIsSea(atSea)) {
-				// remove loc from array
+			if (placeIsSea(atSea)) {  // Dracula is at sea
 				int roundCount = curr / 5 - (round - numReturnedLocs);
 				locations[roundCount] = locations[*numTraps-1];
 				locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
@@ -285,6 +279,7 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 			}
 		}
 	}
+	// remove encountered traps
 	for (int j = 0; j < i; j++) {
 		for (int k = 0; k < *numTraps; k++) {
 			if (remLoc[j] == locations[k]) {

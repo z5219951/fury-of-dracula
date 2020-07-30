@@ -217,7 +217,6 @@ PlaceId HvGetVampireLocation(HunterView hv)
 	if (numReturnedLocs == 0) {
 		return NOWHERE;
 	}
-	// get current round
 	Round round = HvGetRound(hv);
 	// scan through last 6 rounds, from earliest to most recent
 	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
