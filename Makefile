@@ -11,9 +11,12 @@
 
 CC = gcc
 CFLAGS = -Wall -Werror -g
-BINS = testGameView testHunterView testDraculaView testMap testFu
+BINS = testGameView testHunterView testDraculaView testMap testFu testDvFu
 
 all: $(BINS)
+
+testDvFu:	testDvFu.o testUtils.o GameView.o DraculaView.o Map.o Places.o Queue.o Map.o
+testDvFu.o: testDvFu.c GameView.h DraculaView.h Map.h Places.h Game.h Queue.h Map.h
 
 testFu: testFu.o testUtils.o GameView.o Map.o Places.o Queue.o Map.o
 testFu.o: testFu.c GameView.h Map.h Places.h Game.h Queue.h Map.h
