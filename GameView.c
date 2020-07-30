@@ -764,7 +764,7 @@ bool PlaceCmp(char *place1, char *place2) {
 
 // TODO
 
-// get the cities conncected with place "from" through rail
+// Get the cities conncected through rail
 PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city)
 {
 	if (max_distance == 0) {
@@ -829,7 +829,7 @@ PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city
 	free(distance);
 	return list;
 }
-// merge two list
+// Merge two list
 PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
 	int len1 = GetLenOfList(list1);
 	int len2 = GetLenOfList(list2);
@@ -844,7 +844,7 @@ PlaceId *MergeList(PlaceId *list1, PlaceId *list2) {
 	return newList;
 }
 // Get the number of element in an array
-// The list should end with '\0'
+// The list should end with 999
 int GetLenOfList(PlaceId *list) {
 	int i = 0;
 	while (list[i] < 999) {
