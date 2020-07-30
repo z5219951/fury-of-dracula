@@ -406,6 +406,8 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 		}
 	}
 	cleanplaceLis(placeList);
+	result[lenNum] = startId;
+	lenNum++;
 	*numReturnedLocs = lenNum;
 	return result;
 }
@@ -423,9 +425,14 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	bool canFree = false;
 	PlaceId *lastPlace = GvGetLastLocations(trans, hunter,1, &numReturn, &canFree);
 	// if current player hasn't moved yet
-	if (numReturn == 0 || (!road&&!rail&&!boat)) {
+	if (numReturn == 0) {
 		*numReturnedLocs = 0;
 		return NULL;
+	}
+
+	if (!road&&!rail&&!boat) {
+		*numReturnedLocs = 1;
+		return lastPlace;
 	}
 
 	PlaceId startId = lastPlace[0];
@@ -485,6 +492,8 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 		}
 	}
 	cleanplaceLis(placeList);
+	result[lenNum] = startId;
+	lenNum++;
 	*numReturnedLocs = lenNum;
 	MYBOAT = 1;
 	MYRAIL = 1;

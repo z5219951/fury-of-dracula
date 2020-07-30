@@ -708,11 +708,12 @@ int main(void)
 			printf("\tWhere can I go (Lord Godalming, Round 1)\n");
 			int pathLength = -1;
 			PlaceId *path = HvWhereCanIGo(hv, &pathLength);
-			assert(pathLength == 4);
+			assert(pathLength == 5);
 			assert(path[0] == ATLANTIC_OCEAN);
 			assert(path[1] == CADIZ);
 			assert(path[2] == MADRID);
 			assert(path[3] == SANTANDER);
+			assert(path[4] == LISBON);
 
 			printf("Test passed!\n");
 			free(path);
@@ -743,11 +744,12 @@ int main(void)
 			printf("\tWhere can I go by type(Lord Godalming, Round 1)\n");
 			int pathLength = -1;
 			PlaceId *path = HvWhereCanIGoByType(hv,true, true, true, &pathLength);
-			assert(pathLength == 4);
+			assert(pathLength == 5);
 			assert(path[0] == ATLANTIC_OCEAN);
 			assert(path[1] == CADIZ);
 			assert(path[2] == MADRID);
 			assert(path[3] == SANTANDER);
+			assert(path[4] == LISBON);
 
 			printf("Test passed!\n");
 			free(path);
@@ -762,9 +764,9 @@ int main(void)
 			printf("\tWhere can I go by type only by rail(Lord Godalming, Round 1)\n");
 			int pathLength = -1;
 			PlaceId *path = HvWhereCanIGoByType(hv,false, true, false, &pathLength);
-			assert(pathLength == 1);
+			assert(pathLength == 2);
 			assert(path[0] == MADRID);
-
+			assert(path[1] == LISBON);
 			printf("Test passed!\n");
 			free(path);
 		}
@@ -778,11 +780,11 @@ int main(void)
 			printf("\tWhere can I go by type with road and rail(Lord Godalming, Round 1)\n");
 			int pathLength = -1;
 			PlaceId *path = HvWhereCanIGoByType(hv,true, true, false, &pathLength);
-			assert(pathLength == 3);
+			assert(pathLength == 4);
 			assert(path[0] == CADIZ);
 			assert(path[1] == MADRID);
 			assert(path[2] == SANTANDER);
-
+			assert(path[3] == LISBON);
 			printf("Test passed!\n");
 			free(path);
 		}
@@ -796,8 +798,25 @@ int main(void)
 			printf("\tWhere can I go by type with boat(Lord Godalming, Round 1)\n");
 			int pathLength = -1;
 			PlaceId *path = HvWhereCanIGoByType(hv,false, false, true, &pathLength);
-			assert(pathLength == 1);
+			assert(pathLength == 2);
 			assert(path[0] == ATLANTIC_OCEAN);
+			assert(path[1] == LISBON);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type with nothing(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,false, false, false, &pathLength);
+			assert(pathLength == 1);
+			assert(path[0] == LISBON);
 
 			printf("Test passed!\n");
 			free(path);
