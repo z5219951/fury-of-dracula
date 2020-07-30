@@ -305,7 +305,6 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 	if (currPlayer > PLAYER_DRACULA) {
 		round++;
 	}
-	printf("round = %d\n", round);
 	PlaceId from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
 	if (from == NOWHERE) {
 		*numReturnedMoves = 0;
