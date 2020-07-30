@@ -151,7 +151,7 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 		counter++;
 		curr = curr->next;
 	}
-	PlaceId *result = malloc(sizeof(PlaceId) * counter);
+	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 	// Get past 5 moves of dracula
 	char Past5Move[5][3];
 	if (round < 6) {
@@ -167,7 +167,6 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 			Past5Move[i][2] = '\0';
 		}
 	}
-
 	curr = MapGetConnections(dv->map, from);
 	// Check if dracula made hide move or double back in last round
 	if (from == HIDE || from == DOUBLE_BACK_1) {
@@ -218,9 +217,11 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 
 	int index = 0;
 	int round_temp;
+	bool hasRepeatedHide = false;
+	bool hasRepeatedDB = false;
 	// Check whether a connected city satisfy condition
 	while (curr != NULL) {
-		// Dracula can not go to hospital
+		// Dracula can not move to hospital
 		if (curr->p == ST_JOSEPH_AND_ST_MARY) {
 			curr = curr->next;
 			continue;
@@ -232,9 +233,7 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 		}
 
 		bool hasRepeatedMove = false;
-		bool hasRepeatedHide = false;
-		bool hasRepeatedDB = false;
-		
+
 		if (round < 6) {
 			round_temp = round - 1;
 		} else {
@@ -255,22 +254,6 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 				hasRepeatedDB = true;
 			}
 		}
-		// If dracula did not made hide move in the past 5 rounds
-		if (!hasRepeatedHide) {
-			if (!placeIsSea(from)) {
-				result[index++] = HIDE;
-				result[index] = '\0';
-			}
-		} 
-		// If dracula did not made double back in the past 5 rounds
-		if (!hasRepeatedDB) {
-			if (round > 1) result[index++] = DOUBLE_BACK_1;
-			if (round > 2) result[index++] = DOUBLE_BACK_2;
-			if (round > 3) result[index++] = DOUBLE_BACK_3;
-			if (round > 4) result[index++] = DOUBLE_BACK_4;
-			if (round > 5) result[index++] = DOUBLE_BACK_5;
-			result[index] = '\0';
-		}
 		// Skip to next adjacent city if dracula made the same move in the past 5 rounds
 		if (hasRepeatedMove) {
 			curr=curr->next;
@@ -279,16 +262,31 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 		// If current place satisfy condition
 		if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0)  {
 			result[index++] = curr->p;
-			result[index] = '\0';
+			result[index] = 999;
 			repeated_city[curr->p] = 1;
 		}
 		curr = curr->next;
 	}
-	// If there is no legal move, dracula teleports to castel dracula
+	// If dracula did not made hide move in the past 5 rounds
+	if (!hasRepeatedHide) {
+		if (!placeIsSea(from)) {
+			result[index++] = HIDE;
+			result[index] = 999;
+		}
+	} 
+	// If dracula did not made double back in the past 5 rounds
+	if (!hasRepeatedDB) {
+		if (round > 1) result[index++] = DOUBLE_BACK_1;
+		if (round > 2) result[index++] = DOUBLE_BACK_2;
+		if (round > 3) result[index++] = DOUBLE_BACK_3;
+		if (round > 4) result[index++] = DOUBLE_BACK_4;
+		if (round > 5) result[index++] = DOUBLE_BACK_5;
+		result[index] = 999;
+	}
+	// If there is no legal move for dracula
 	if (index == 0) {
-		*numReturnedMoves = 1;
-		result[0] = TELEPORT;
-		return result;
+		*numReturnedMoves = 0;
+		return NULL;
 	}
 	*numReturnedMoves = GetLenOfList(result);
 	return result;
@@ -320,6 +318,53 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 	LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
 	LastMove[0][2] = '\0';
 	int from = placeAbbrevToId(LastMove[0]);
+
+	if (from == HIDE || from == DOUBLE_BACK_1) {
+		if (round > 2) {
+			char Last2Move[1][3];
+			Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
+			Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+			Last2Move[0][2] = '\0';
+			from = placeAbbrevToId(Last2Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_2) {
+		if (round > 3) {
+			char Last3Move[1][3];
+			Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
+			Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+			Last3Move[0][2] = '\0';
+			from = placeAbbrevToId(Last3Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_3) {
+		if (round > 4) {
+			char Last4Move[1][3];
+			Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
+			Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+			Last4Move[0][2] = '\0';
+			from = placeAbbrevToId(Last4Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_4) {
+		if (round > 5) {
+			char Last5Move[1][3];
+			Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+			Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last5Move[0][2] = '\0';
+			from = placeAbbrevToId(Last5Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_5) {
+		if (round > 6) {
+			char Last6Move[1][3];
+			Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+			Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last6Move[0][2] = '\0';
+			from = placeAbbrevToId(Last6Move[0]);
+		}
+	}
+
 	// The following array can avoid the same city be added
 	int n = MapNumPlaces(dv->map);
 	int *repeated_city = calloc(n, sizeof(int));
@@ -330,7 +375,7 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 		counter++;
 		curr = curr->next;
 	}
-	PlaceId *result = malloc(sizeof(PlaceId) * counter);
+	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 	// Get past 5 moves of dracula
 	char Past5Move[5][3];
 	if (round < 6) {
@@ -346,7 +391,6 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 			Past5Move[i][2] = '\0';
 		}
 	}
-
 	curr = MapGetConnections(dv->map, from);
 	int index = 0;
 	int round_temp;
@@ -382,7 +426,7 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 		// If current adjacent place satisfy condition
 		if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0)  {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 		}
 
@@ -423,6 +467,51 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 	LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
 	LastMove[0][2] = '\0';
 	int from = placeAbbrevToId(LastMove[0]);
+	if (from == HIDE || from == DOUBLE_BACK_1) {
+		if (round > 2) {
+			char Last2Move[1][3];
+			Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
+			Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+			Last2Move[0][2] = '\0';
+			from = placeAbbrevToId(Last2Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_2) {
+		if (round > 3) {
+			char Last3Move[1][3];
+			Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
+			Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+			Last3Move[0][2] = '\0';
+			from = placeAbbrevToId(Last3Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_3) {
+		if (round > 4) {
+			char Last4Move[1][3];
+			Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
+			Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+			Last4Move[0][2] = '\0';
+			from = placeAbbrevToId(Last4Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_4) {
+		if (round > 5) {
+			char Last5Move[1][3];
+			Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+			Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last5Move[0][2] = '\0';
+			from = placeAbbrevToId(Last5Move[0]);
+		}
+	}
+	else if (from == DOUBLE_BACK_5) {
+		if (round > 6) {
+			char Last6Move[1][3];
+			Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+			Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last6Move[0][2] = '\0';
+			from = placeAbbrevToId(Last6Move[0]);
+		}
+	}
 	// The following array can avoid the same place be added
 	int n = MapNumPlaces(dv->map);
 	int *repeated_city = calloc(n, sizeof(int));
@@ -433,7 +522,7 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 		counter++;
 		curr = curr->next;
 	}
-	PlaceId *result = malloc(sizeof(PlaceId) * counter);
+	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 	// Get past 5 moves of dracula
 	char Past5Move[5][3];
 	if (round < 6) {
@@ -485,12 +574,12 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 		// If current place satisfy conditon
 		if (curr->type == ROAD  && road == true && repeated_city[curr->p] == 0) {
 			result[index++] = curr->p;
-			result[index] = '\0';
+			result[index] = 999;
 			repeated_city[curr->p] = 1;
 
 		} else if (curr->type == BOAT && boat == true && repeated_city[curr->p] == 0) {
 			result[index++] = curr->p;
-			result[index] = '\0';
+			result[index] = 999;
 			repeated_city[curr->p] = 1;
 		}
 
@@ -537,6 +626,51 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
 		LastMove[0][2] = '\0';
 		int from = placeAbbrevToId(LastMove[0]);
+		if (from == HIDE || from == DOUBLE_BACK_1) {
+			if (round > 2) {
+				char Last2Move[1][3];
+				Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
+				Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+				Last2Move[0][2] = '\0';
+				from = placeAbbrevToId(Last2Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_2) {
+			if (round > 3) {
+				char Last3Move[1][3];
+				Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
+				Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+				Last3Move[0][2] = '\0';
+				from = placeAbbrevToId(Last3Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_3) {
+			if (round > 4) {
+				char Last4Move[1][3];
+				Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
+				Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+				Last4Move[0][2] = '\0';
+				from = placeAbbrevToId(Last4Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_4) {
+			if (round > 5) {
+				char Last5Move[1][3];
+				Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+				Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last5Move[0][2] = '\0';
+				from = placeAbbrevToId(Last5Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_5) {
+			if (round > 6) {
+				char Last6Move[1][3];
+				Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+				Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last6Move[0][2] = '\0';
+				from = placeAbbrevToId(Last6Move[0]);
+			}
+		}
 		// Counter is the number of connection
 		int counter = 0;
 		ConnList curr = MapGetConnections(dv->map, from);
@@ -544,7 +678,7 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 			counter++;
 			curr = curr->next;
 		}
-		PlaceId *result = malloc(sizeof(PlaceId) * counter);
+		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 		// Get past 5 moves of dracula
 		char Past5Move[5][3];
 		if (round < 6) {
@@ -596,7 +730,7 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		// If current place satisfy condition
 		if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0)  {
 			result[index++] = curr->p;
-			result[index] = '\0';
+			result[index] = 999;
 			repeated_city[curr->p] = 1;
 		}
 
@@ -664,7 +798,7 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 			counter++;
 			curr = curr->next;
 		}
-		PlaceId *result = malloc(sizeof(PlaceId) * counter);
+		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 		curr = MapGetConnections(dv->map, from);
 		int index = 0;
 		int max_distance = round % 4;
@@ -677,32 +811,35 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 			}
 			if (curr->type == ROAD) {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 			}
-			if (curr->type == BOAT) {
+			else if (curr->type == BOAT) {
 				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 				// From port city to adjacent sea
-				if (placeIsLand(from) && placeIsSea(curr->p)) {
+				else if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 			}
 			curr = curr->next;
 		}
 		if (RailList != NULL) {
+			if (index == 0) {
+				*numReturnedLocs = GetLenOfList(RailList);
+				return RailList;
+			}
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
 		return result;
 	}
-	return NULL;
 }
 
 PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
@@ -738,6 +875,51 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
 		LastMove[0][2] = '\0';
 		int from = placeAbbrevToId(LastMove[0]);
+		if (from == HIDE || from == DOUBLE_BACK_1) {
+			if (round > 2) {
+				char Last2Move[1][3];
+				Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
+				Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+				Last2Move[0][2] = '\0';
+				from = placeAbbrevToId(Last2Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_2) {
+			if (round > 3) {
+				char Last3Move[1][3];
+				Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
+				Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+				Last3Move[0][2] = '\0';
+				from = placeAbbrevToId(Last3Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_3) {
+			if (round > 4) {
+				char Last4Move[1][3];
+				Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
+				Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+				Last4Move[0][2] = '\0';
+				from = placeAbbrevToId(Last4Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_4) {
+			if (round > 5) {
+				char Last5Move[1][3];
+				Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+				Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last5Move[0][2] = '\0';
+				from = placeAbbrevToId(Last5Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_5) {
+			if (round > 6) {
+				char Last6Move[1][3];
+				Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
+				Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last6Move[0][2] = '\0';
+				from = placeAbbrevToId(Last6Move[0]);
+			}
+		}
 		// Counter is the number of connection
 		int counter = 0;
 		ConnList curr = MapGetConnections(dv->map, from);
@@ -745,7 +927,7 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 			counter++;
 			curr = curr->next;
 		}
-		PlaceId *result = malloc(sizeof(PlaceId) * counter);
+		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 		// Get past 5 moves of dracula
 		char Past5Move[5][3];
 		if (round < 6) {
@@ -797,12 +979,12 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		// If current place satisfy condition
 		if (curr->type == ROAD && road == true && repeated_city[curr->p] == 0) {
 			result[index++] = curr->p;
-			result[index] = '\0';
+			result[index] = 999;
 			repeated_city[curr->p] = 1;
 		}
 		else if (curr->type == BOAT && boat == true && repeated_city[curr->p] == 0) {
 			result[index++] = curr->p;
-			result[index] = '\0';
+			result[index] = 999;
 			repeated_city[curr->p] = 1;
 		}
 
@@ -870,12 +1052,15 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 			counter++;
 			curr = curr->next;
 		}
-		PlaceId *result = malloc(sizeof(PlaceId) * counter);
+		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 		curr = MapGetConnections(dv->map, from);
 		int index = 0;
 		int max_distance = round % 4;
 		// Get the places connected through rail
-		PlaceId *RailList = GetConnRail(dv->map, from, max_distance, repeated_city);
+		PlaceId *RailList = NULL;
+		if (rail == true) {
+			RailList = GetConnRail(dv->map, from, max_distance, repeated_city);
+		}
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -883,26 +1068,30 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 			}
 			if (curr->type == ROAD && road == true) {
 				result[index++] = curr->p;
-				result[index] = '\0';
+				result[index] = 999;
 				repeated_city[curr->p] = 1;
 			}
 			if (curr->type == BOAT && boat == true) {
 				// From sea to sea or port city
 				if (placeIsSea(from)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 				// From port city to adjacent sea
 				if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
-					result[index] = '\0';
+					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
 			}
 			curr = curr->next;
 		}
 		if (RailList != NULL && rail == true) {
+			if (index == 0) {
+				*numReturnedLocs = GetLenOfList(RailList);
+				return RailList;
+			}
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
