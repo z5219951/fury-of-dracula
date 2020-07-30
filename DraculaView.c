@@ -305,7 +305,6 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 	if (currPlayer > PLAYER_DRACULA) {
 		round++;
 	}
-	printf("round = %d\n", round);
 	PlaceId from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
 	if (from == NOWHERE) {
 		*numReturnedMoves = 0;
@@ -383,28 +382,22 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 
 	int index = 0;
 	int round_temp;
+	if (round < 5) {
+		round_temp = round;
+	} else {
+		round_temp = 5;
+	}
 	bool hasRepeatedHide = false;
 	bool hasRepeatedDB = false;
 	// Check whether a connected city satisfy condition
 	while (curr != NULL) {
-		// Dracula can not move to hospital
-		if (curr->p == ST_JOSEPH_AND_ST_MARY) {
+		if (curr->type == RAIL
+		|| repeated_city[curr->p] == 1 
+		|| curr->p == ST_JOSEPH_AND_ST_MARY) {
 			curr = curr->next;
 			continue;
 		}
-		// Dracula can not travel through rail
-		if (curr->type == RAIL) {
-			curr = curr->next;
-			continue;
-		}
-
 		bool hasRepeatedMove = false;
-
-		if (round < 5) {
-			round_temp = round;
-		} else {
-			round_temp = 5;
-		}
 		// Check if dracula has made the same move in past 5 round
 		for (int i = 0; i < round_temp; i++) {
 			int curr_ID = placeAbbrevToId(Past5Move[i]);
@@ -426,7 +419,7 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 			continue;
 		}
 		// If current place satisfy condition
-		if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0)  {
+		if (curr->type == ROAD || curr->type == BOAT)  {
 			result[index++] = curr->p;
 			result[index] = 999;
 			repeated_city[curr->p] = 1;
@@ -517,7 +510,6 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 			from = placeAbbrevToId(Last6Move[0]);
 		}
 	}
-
 	// The following array can avoid the same city be added
 	int n = MapNumPlaces(dv->map);
 	int *repeated_city = calloc(n, sizeof(int));
@@ -547,24 +539,20 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 	curr = MapGetConnections(dv->map, from);
 	int index = 0;
 	int round_temp;
+	if (round < 5) {
+		round_temp = round;
+	} else {
+		round_temp = 5;
+	}
 	// Check whether a adjacent city satisfy condition
 	while(curr != NULL) {
-		// Dracula can not move to hospital
-		if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-			curr = curr->next;
-			continue;
-		}
-		// Dracula can not travel through rail
-		if (curr->type == RAIL) {
+		if (curr->type == RAIL 
+		|| curr->p == ST_JOSEPH_AND_ST_MARY 
+		|| repeated_city[curr->p] == 1) {
 			curr = curr->next;
 			continue;
 		}
 		bool hasRepeatedMove = false;
-		if (round < 5) {
-			round_temp = round;
-		} else {
-			round_temp = 5;
-		}
 		// Check if dracula has made the same move in past 5 round
 		for (int i = 0; i < round_temp; i++) {
 			if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
@@ -577,12 +565,11 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 			continue;
 		}
 		// If current adjacent place satisfy condition
-		if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0)  {
-				result[index++] = curr->p;
-				result[index] = 999;
-				repeated_city[curr->p] = 1;
+		if (curr->type == ROAD || curr->type == BOAT)  {
+			result[index++] = curr->p;
+			result[index] = 999;
+			repeated_city[curr->p] = 1;
 		}
-
 		curr = curr->next;
 	}
 	// If there is no valid move for dracula
@@ -752,6 +739,10 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 	// If current player is dracula
 	if (player == PLAYER_DRACULA) {
 		from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
+		if (from == NOWHERE) {
+			*numReturnedLocs = 0;
+			return NULL;
+		}
 		if (from == HIDE || from == DOUBLE_BACK_1) {
 			if (round > 1) {
 				char Last2Move[1][3];
@@ -831,36 +822,32 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		}
 		// Check if current adjacent place satisfy condition
 		while(curr != NULL) {
-		// Dracula can not move to hospital
-		if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-			curr = curr->next;
-			continue;
-		}
-		// Dracula can not travel through rail
-		if (curr->type == RAIL) {
-			curr = curr->next;
-			continue;
-		}
-		bool hasRepeatedMove = false;
-		// Check if dracula has made the same move in past 5 round
-		for (int i = 0; i < round_temp; i++) {
-			if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
-				hasRepeatedMove = true;
+			if (curr->type == RAIL
+			|| repeated_city[curr->p] == 1
+			|| curr->p == ST_JOSEPH_AND_ST_MARY) {
+				curr = curr->next;
+				continue;
 			}
-		}
-		// Skip to next adjacent place
-		if (hasRepeatedMove) {
-			curr = curr->next;
-			continue;
-		}
-		// If current place satisfy condition
-		if ((curr->type == ROAD || curr->type == BOAT) && repeated_city[curr->p] == 0)  {
-			result[index++] = curr->p;
-			result[index] = 999;
-			repeated_city[curr->p] = 1;
-		}
 
-		curr = curr->next;
+			bool hasRepeatedMove = false;
+			// Check if dracula has made the same move in past 5 round
+			for (int i = 0; i < round_temp; i++) {
+				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
+					hasRepeatedMove = true;
+				}
+			}
+			// Skip to next adjacent place
+			if (hasRepeatedMove) {
+				curr = curr->next;
+				continue;
+			}
+			// If current place satisfy condition
+			if (curr->type == ROAD || curr->type == BOAT)  {
+				result[index++] = curr->p;
+				result[index] = 999;
+				repeated_city[curr->p] = 1;
+			}
+			curr = curr->next;
 		}
 	// If there is no valid move for dracula
 	if (index == 0) {
