@@ -574,6 +574,7 @@ PlaceId *GvGetReachableByType(GameView gv, Player player, Round round,
 		PlaceId *result = malloc(sizeof(PlaceId) * 2);
 		result[0] = from;
 		result[1] = 999;
+		*numReturnedLocs = 1;
 		return result;
 	}
 	int n = MapNumPlaces(gv->map);
