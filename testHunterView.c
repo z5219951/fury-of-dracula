@@ -560,6 +560,142 @@ int main(void)
 			printf("Test passed!\n");
 		}
 	}
+
+	{////////////////////////////////////////////////////////////
+
+		printf("Additional tests for player and vampire locations.\n");
+
+		{
+
+			// testing empty play history
+
+			char *trail = "";
+
+			Message messages[] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == NOWHERE);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);
+			
+		}
+
+		{
+
+			// testing after first play
+
+			char *trail =
+				"GST....";
+			
+			Message messages[1] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == STRASBOURG);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == NOWHERE);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);			
+
+		}
+
+		{
+
+			// testing a hunter dying
+			
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DSTT... "
+				"GGE.... SGE.... HGE.... MGE.... DHIT... "
+				"GGE.... SGE.... HZU.... MCF.... DD1T... "
+				"GGE.... SSTTTTD";
+			
+			Message messages[21] = {};
+			HunterView hv = HvNew(trail, messages);
+			
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == HOSPITAL_PLACE);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == ZURICH);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == CLERMONT_FERRAND);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == STRASBOURG);
+			assert(HvGetVampireLocation(hv) == CITY_UNKNOWN);
+			HvFree(hv);
+
+		}
+
+		{
+
+			// Testing an unrevealed vampire location
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... ";
+			
+			Message messages[35] = {};
+			HunterView hv = HvNew(trail, messages);
+			
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == CITY_UNKNOWN);
+			assert(HvGetVampireLocation(hv) == CITY_UNKNOWN);
+			HvFree(hv);
+
+		}
+
+		{
+
+			// Testing a matured vampire
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T.V. "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... ";
+			
+			Message messages[35] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == CITY_UNKNOWN);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);
+
+		}
+
+		{
+
+			// Test for hunter encountering trap, vampire and Dracula
+
+			char *trail =
+				"GST.... SAO.... HCD.... MAO.... DGE.V.. "
+				"GST.... SAO.... HCD.... MAO.... DHIT... "
+				"GGETVD. SAO.... HCD....";
+			
+			Message messages[] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == GENEVA);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);
+			
+		}
+
+	}
 	
 	{
 		printf("Additional tests for Making a Move Part");
@@ -668,4 +804,5 @@ int main(void)
 		}
 	}
 	return EXIT_SUCCESS;
+	
 }

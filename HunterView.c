@@ -190,13 +190,70 @@ int HvGetHealth(HunterView hv, Player player)
 PlaceId HvGetPlayerLocation(HunterView hv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return NOWHERE;
+	// check hv is not NULL
+	if (hv == NULL || hv->num == 0) {
+		return NOWHERE;
+	}
+	int health = HvGetHealth(hv, player);
+	if (health == 0) {
+		return HOSPITAL_PLACE;
+	}
+	int numReturnedLocs = 1; 
+	bool canFree = 1;
+	PlaceId *result; 
+	GameView trans = hunterToGame(hv);
+	result = GvGetLastLocations(trans, player, 1, &numReturnedLocs, &canFree); 
+	if (numReturnedLocs == 0) { // if player has not had a turn yet
+		return NOWHERE; 
+	}
+	PlaceId location = *result;
+	if (canFree == 1) { // free array
+		free(result);
+	}
+	return location;
 }
 
 PlaceId HvGetVampireLocation(HunterView hv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return NOWHERE;
+	// check hv is not NULL
+	if (hv == NULL || hv->num == 0) {
+		return NOWHERE;
+	}
+	bool canFree = 1;
+	int numReturnedLocs;
+	GameView trans = hunterToGame(hv);
+	PlaceId *locations = GvGetLastLocations(trans, PLAYER_DRACULA, TRAIL_SIZE, 
+								   &numReturnedLocs, &canFree);
+	if (numReturnedLocs == 0) {
+		return NOWHERE;
+	}
+	Round round = HvGetRound(hv);
+	// scan through last 6 rounds, from earliest to most recent
+	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	if (curr < 0) {
+		curr = 0;
+	}
+	int vampLoc = -1;
+	for (int counter = 1; curr < hv->num; curr++, counter++) {
+		if (hv->Path[curr][0] == 'D' && 
+			hv->Path[curr][4] == 'V') {
+			vampLoc = counter / 5;
+		} else if (hv->Path[curr][3] == 'V' ||
+				   hv->Path[curr][4] == 'V' ||
+				   hv->Path[curr][5] == 'V') { 
+			// immature vampire vanquished on hunter's turn
+			return NOWHERE;
+		}
+	}
+	if (vampLoc == -1) {
+		return NOWHERE;
+	}
+	PlaceId result = locations[vampLoc-1];
+	if (canFree) {
+		free(locations);
+	}
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
