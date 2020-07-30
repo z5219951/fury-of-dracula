@@ -221,7 +221,6 @@ int main(void)
 	{///////////////////////////////////////////////////////////////////
 	
 		printf("Testing vampire location\n");
-		
 		char *trail =
 			"GVI.... SGE.... HGE.... MGE.... DCD.V.. "
 			"GBD.... SGE.... HGE.... MGE.... DC?T... "
@@ -282,11 +281,11 @@ int main(void)
 		Round round = -1;
 		assert(HvGetLastKnownDraculaLocation(hv, &round) == KLAUSENBURG);
 		assert(round == 1);
-
+		
 		HvFree(hv);
 		printf("Test passed!\n");
 	}
-
+	
 	{///////////////////////////////////////////////////////////////////
 		
 		printf("Testing shortest path 1\n");
@@ -469,6 +468,360 @@ int main(void)
 		HvFree(hv);
 		printf("Test passed!\n");	
 	}
+
+	{
+		printf("Additional tests for HvGetLastKnownDraculaLocation & HvGetShortestPathTo");
+		{///////////////////////////////////////////////////////////////////
+			printf("HvGetShortestPathTo Part\n");
+			printf("Round 0\n");
+
+			char *trail =
+				"GGE....";
+			
+			Message messages[] = {
+				"Hello"
+			};
+			
+			HunterView hv = HvNew(trail, messages);
+
+			
+			int pathLength = -1;
+			PlaceId *path = HvGetShortestPathTo(hv, PLAYER_DR_SEWARD,
+			                                    CASTLE_DRACULA, &pathLength);
+			assert(path[0] == CASTLE_DRACULA);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+
+		{///////////////////////////////////////////////////////////////////
 	
+			printf("Go to current place\n");
+
+			char *trail =
+				"GCD....";
+			
+			Message messages[] = {
+				"Hello"
+			};
+			
+			HunterView hv = HvNew(trail, messages);
+
+			
+			int pathLength = -1;
+			PlaceId *path = HvGetShortestPathTo(hv, PLAYER_LORD_GODALMING,
+			                                    CASTLE_DRACULA, &pathLength);
+			assert(path[0] == CASTLE_DRACULA);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+
+		{////////////////////////////////////////////////////////////
+
+			printf("HvGetLastKnownDraculaLocation Part\n");
+			printf("Round 0\n");
+
+			char *trail =
+				"";
+			
+			Message messages[] = {};
+			
+			HunterView hv = HvNew(trail, messages);
+
+			
+			Round round = -1;
+			assert(HvGetLastKnownDraculaLocation(hv, &round) == NOWHERE);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+
+		{////////////////////////////////////////////////////////////
+
+			printf("HvGetLastKnownDraculaLocation Part\n");
+			printf("Check Teleport\n");
+
+			char *trail =
+				"GGE.... SGE.... HVI.... MGE.... DCD.V.. "
+				"GGE.... SGE.... HBD.... MGE.... DKLT... "
+				"GGE.... SGE.... HSZ.... MGE.... DC?T... "
+				"GGE.... SGE.... HKLT... MGE.... DTPT... "
+				"GGE.... SGE.... HCDV... MGE.... DD1T...";
+		
+			Message messages[25] = {};
+			HunterView hv = HvNew(trail, messages);
+			
+			Round round = -1;
+			assert(HvGetLastKnownDraculaLocation(hv, &round) == CASTLE_DRACULA);
+			assert(round == 4);
+
+			HvFree(hv);
+			printf("Test passed!\n");
+		}
+	}
+
+	{////////////////////////////////////////////////////////////
+
+		printf("Additional tests for player and vampire locations.\n");
+
+		{
+
+			// testing empty play history
+
+			char *trail = "";
+
+			Message messages[] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == NOWHERE);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);
+			
+		}
+
+		{
+
+			// testing after first play
+
+			char *trail =
+				"GST....";
+			
+			Message messages[1] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == STRASBOURG);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == NOWHERE);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == NOWHERE);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);			
+
+		}
+
+		{
+
+			// testing a hunter dying
+			
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DSTT... "
+				"GGE.... SGE.... HGE.... MGE.... DHIT... "
+				"GGE.... SGE.... HZU.... MCF.... DD1T... "
+				"GGE.... SSTTTTD";
+			
+			Message messages[21] = {};
+			HunterView hv = HvNew(trail, messages);
+			
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == HOSPITAL_PLACE);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == ZURICH);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == CLERMONT_FERRAND);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == STRASBOURG);
+			assert(HvGetVampireLocation(hv) == CITY_UNKNOWN);
+			HvFree(hv);
+
+		}
+
+		{
+
+			// Testing an unrevealed vampire location
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... ";
+			
+			Message messages[35] = {};
+			HunterView hv = HvNew(trail, messages);
+			
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DR_SEWARD) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_VAN_HELSING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_MINA_HARKER) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == CITY_UNKNOWN);
+			assert(HvGetVampireLocation(hv) == CITY_UNKNOWN);
+			HvFree(hv);
+
+		}
+
+		{
+
+			// Testing a matured vampire
+
+			char *trail =
+				"GGE.... SGE.... HGE.... MGE.... DC?.V.. "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... "
+				"GGE.... SGE.... HGE.... MGE.... DC?T.V. "
+				"GGE.... SGE.... HGE.... MGE.... DC?T... ";
+			
+			Message messages[35] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == CITY_UNKNOWN);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);
+
+		}
+
+		{
+
+			// Test for hunter encountering trap, vampire and Dracula
+
+			char *trail =
+				"GST.... SAO.... HCD.... MAO.... DGE.V.. "
+				"GST.... SAO.... HCD.... MAO.... DHIT... "
+				"GGETVD. SAO.... HCD....";
+			
+			Message messages[] = {};
+			HunterView hv = HvNew(trail, messages);
+
+			assert(HvGetPlayerLocation(hv, PLAYER_LORD_GODALMING) == GENEVA);
+			assert(HvGetPlayerLocation(hv, PLAYER_DRACULA) == GENEVA);
+			assert(HvGetVampireLocation(hv) == NOWHERE);
+			HvFree(hv);
+			
+		}
+
+	}
+	
+	{
+		printf("Additional tests for Making a Move Part");
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go (Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGo(hv, &pathLength);
+			assert(pathLength == 5);
+			assert(path[0] == ATLANTIC_OCEAN);
+			assert(path[1] == CADIZ);
+			assert(path[2] == MADRID);
+			assert(path[3] == SANTANDER);
+			assert(path[4] == LISBON);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go (Lord Godalming, Round 0)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGo(hv, &pathLength);
+			assert(pathLength == 0);
+			
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,true, true, true, &pathLength);
+			assert(pathLength == 5);
+			assert(path[0] == ATLANTIC_OCEAN);
+			assert(path[1] == CADIZ);
+			assert(path[2] == MADRID);
+			assert(path[3] == SANTANDER);
+			assert(path[4] == LISBON);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type only by rail(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,false, true, false, &pathLength);
+			assert(pathLength == 2);
+			assert(path[0] == MADRID);
+			assert(path[1] == LISBON);
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type with road and rail(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,true, true, false, &pathLength);
+			assert(pathLength == 4);
+			assert(path[0] == CADIZ);
+			assert(path[1] == MADRID);
+			assert(path[2] == SANTANDER);
+			assert(path[3] == LISBON);
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type with boat(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,false, false, true, &pathLength);
+			assert(pathLength == 2);
+			assert(path[0] == ATLANTIC_OCEAN);
+			assert(path[1] == LISBON);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+
+		{
+			char *trail =
+			"GLS.... SLS.... HSW.... MMR.... DCD.V..";
+		
+			Message messages[5] = {};
+			HunterView hv = HvNew(trail, messages);
+			printf("\tWhere can I go by type with nothing(Lord Godalming, Round 1)\n");
+			int pathLength = -1;
+			PlaceId *path = HvWhereCanIGoByType(hv,false, false, false, &pathLength);
+			assert(pathLength == 1);
+			assert(path[0] == LISBON);
+
+			printf("Test passed!\n");
+			free(path);
+		}
+	}
 	return EXIT_SUCCESS;
+	
 }

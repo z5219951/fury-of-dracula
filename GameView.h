@@ -259,6 +259,9 @@ PlaceId *GetConnRail(Map map, PlaceId from, int max_distance, int *repeated_city
 PlaceId *MergeList(PlaceId *list1, PlaceId *list2);
 int GetLenOfList(PlaceId *list);
 
+int GvGetRoundHealth(GameView gv, Player player, int health, int i);
+bool PlaceCmp(char *place1, char *place2);
+bool DnumCheck (PlaceId PId);
 // TODO
 
 #endif // !defined (FOD__GAME_VIEW_H_)

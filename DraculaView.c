@@ -29,6 +29,9 @@ struct draculaView {
 	Map map;
 };
 
+// change dracula adt into gameview adt
+static GameView draculaToGame(DraculaView dv);
+
 ////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 
@@ -78,38 +81,217 @@ void DvFree(DraculaView dv)
 Round DvGetRound(DraculaView dv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return 0;
+	assert(dv != NULL);
+	return dv->num / 5;
 }
 
 int DvGetScore(DraculaView dv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return 0;
+	assert(dv != NULL);
+	if (dv->num == 0) return GAME_START_SCORE;
+	int score = GAME_START_SCORE - dv->num / NUM_PLAYERS; 
+	//Caculate loss score in DRACULA turn	  
+	int Hunter_health[4]; //store hunter's health
+	for (int i = 0; i < 4; i++) // Initialize the hunter's health
+	Hunter_health[i] = GAME_START_HUNTER_LIFE_POINTS;  
+	for (int i = 0; i < dv->num; i++) {
+		if (i % 5 == PLAYER_DRACULA) {
+			// Caculate loss score when Vampire mature
+			if (dv->Path[i][5] == 'V') 
+			score -= SCORE_LOSS_VAMPIRE_MATURES;
+		} else {
+			Hunter_health[i % 5]
+			= dvGetRoundHealth(dv, i % 5, Hunter_health[i % 5], i);
+			// Cacualte loss score when hunter are in hospital
+			if (Hunter_health[i % 5] <= 0) {
+				score -= SCORE_LOSS_HUNTER_HOSPITAL;
+			}
+		}
+	}
+	return score;
 }
 
 int DvGetHealth(DraculaView dv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return 0;
+	assert(dv != NULL);
+	int health = 0;
+	// Intialize the health value
+	if (player == PLAYER_DRACULA) health = GAME_START_BLOOD_POINTS;
+	else health = GAME_START_HUNTER_LIFE_POINTS;
+	for (int i = player; i < dv->num; i += NUM_PLAYERS) {
+		// recovre the hunter's health
+		if (health < 0 && player != PLAYER_DRACULA) 
+		health = GAME_START_HUNTER_LIFE_POINTS;
+		health = dvGetRoundHealth(dv, player, health, i);
+	}
+	// return health when the hunter in hospital
+	if (health <= 0 && player != PLAYER_DRACULA) return 0;
+
+	return health;
 }
 
 PlaceId DvGetPlayerLocation(DraculaView dv, Player player)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return NOWHERE;
+	// check dv is not NULL
+	assert(dv != NULL);
+	int health = DvGetHealth(dv, player);
+	if (health == 0) {
+		return HOSPITAL_PLACE;
+	}
+	int numReturnedLocs = 1; 
+	bool canFree = 1;
+	PlaceId *result; 
+	GameView trans = draculaToGame(dv);
+	result = GvGetLastLocations(trans, player, 1, &numReturnedLocs, &canFree); 
+	if (numReturnedLocs == 0) { // if player has not had a turn yet
+		return NOWHERE; 
+	}
+	PlaceId location = *result;
+	if (canFree == 1) { // free array
+		free(result);
+	}
+	return location;
 }
 
 PlaceId DvGetVampireLocation(DraculaView dv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	return NOWHERE;
+	// check dv is not NULL
+	assert(dv != NULL);
+	if (dv->num < 5) {
+		return NOWHERE;
+	}
+	bool canFree = 1;
+	int numReturnedLocs;
+	GameView trans = draculaToGame(dv);
+	PlaceId *locations = GvGetLastLocations(trans, PLAYER_DRACULA, TRAIL_SIZE, 
+								   &numReturnedLocs, &canFree);
+	if (numReturnedLocs == 0) {
+		return NOWHERE;
+	}
+	Round round = DvGetRound(dv);
+	// scan through last 6 rounds, from earliest to most recent
+	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	if (curr < 0) {
+		curr = 0;
+	}
+	int vampLoc = -1;
+	for (int counter = 1; curr < dv->num; curr++, counter++) {
+		if (dv->Path[curr][0] == 'D' && 
+			dv->Path[curr][4] == 'V') {
+			vampLoc = counter / 5;
+		} else if (dv->Path[curr][3] == 'V' ||
+				   dv->Path[curr][4] == 'V' ||
+				   dv->Path[curr][5] == 'V') { 
+			// immature vampire vanquished on hunter's turn
+			return NOWHERE;
+		}
+	}
+	if (vampLoc == -1) {
+		return NOWHERE;
+	}
+	PlaceId result = locations[vampLoc-1];
+	if (canFree) {
+		free(locations);
+	}
+	return result;
 }
 
 PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+	// check dv is not NULL
+	if (dv == NULL || dv->num == 0) {
+		return NULL;
+	}
 	*numTraps = 0;
-	return NULL;
+	PlaceId *locations = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
+	// get last 6 Dracula locations
+	bool canFree = 1;
+	int numReturnedLocs;
+	GameView trans = draculaToGame(dv);
+	locations = GvGetLastLocations(trans, PLAYER_DRACULA, TRAIL_SIZE, 
+								   &numReturnedLocs, &canFree);
+	*numTraps = numReturnedLocs;
+	Round round = DvGetRound(dv);
+	// scan through last 6 rounds, from earliest to most recent
+	int curr = (round - TRAIL_SIZE) * NUM_PLAYERS;
+	if (curr < 0) {
+		curr = 0;
+	}
+	// array of locations to remove 
+	PlaceId *remLoc = malloc(sizeof(PlaceId)*TRAIL_SIZE); 
+	char abbrevLoc[1][3];
+	int i = 0;
+	for (; curr < dv->num; curr++) {
+		if (dv->Path[curr][3] == 'T' &&
+			dv->Path[curr][0] != 'D') { // trap encountered by Hunter
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			remLoc[i] = placeAbbrevToId(abbrevLoc[1]);
+			i++;
+		}
+		if (dv->Path[curr][4] == 'T' &&
+			dv->Path[curr][0] != 'D') {
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			remLoc[i] = placeAbbrevToId(abbrevLoc[1]);
+			i++;
+		}
+		if (dv->Path[curr][5] == 'T' &&
+			dv->Path[curr][0] != 'D') {
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			remLoc[i] = placeAbbrevToId(abbrevLoc[1]);
+			i++;
+		}
+		if (dv->Path[curr][4] == 'V' &&
+			dv->Path[curr][0] == 'D') { // loc of immature vampire
+			int roundCount = (curr / 5) - (round - numReturnedLocs);
+			locations[roundCount] = locations[*numTraps-1];
+			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
+			*numTraps -= 1;
+		}
+		else if (dv->Path[curr][3] == '.' &&
+				 dv->Path[curr][0] == 'D') { // no trap placed
+			int roundCount = curr / 5 - (round - numReturnedLocs);
+			locations[roundCount] = locations[*numTraps-1];
+			locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
+			*numTraps -= 1;
+		} 
+		else if (dv->Path[curr][0] == 'D') {
+			abbrevLoc[1][0] = dv->Path[curr][1];
+			abbrevLoc[1][1] = dv->Path[curr][2];	
+			abbrevLoc[1][2] = '\0';
+			PlaceId atSea = placeAbbrevToId(abbrevLoc[1]);
+			if (placeIsSea(atSea)) {  // Dracula is at sea
+				int roundCount = curr / 5 - (round - numReturnedLocs);
+				locations[roundCount] = locations[*numTraps-1];
+				locations = realloc(locations, sizeof(PlaceId)*(*numTraps-1));
+				*numTraps -= 1;
+				
+			}
+		}
+	}
+	// remove encountered traps
+	for (int j = 0; j < i; j++) {
+		for (int k = 0; k < *numTraps; k++) {
+			if (remLoc[j] == locations[k]) {
+				*numTraps -= 1;
+				locations[k] = locations[*numTraps];
+				locations = realloc(locations, sizeof(PlaceId)*(*numTraps));
+				break;
+			}
+		}
+	}
+	free(remLoc);
+	return locations;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -118,33 +300,19 @@ PlaceId *DvGetTrapLocations(DraculaView dv, int *numTraps)
 PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	// If  Dracula  hasn't  made  a move yet
-	if (dv->num < 5) {
+	Player currPlayer = (dv->num) % 5;
+	int round = (dv->num) / 5;
+	if (currPlayer > PLAYER_DRACULA) {
+		round++;
+	}
+	printf("round = %d\n", round);
+	PlaceId from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
+	if (from == NOWHERE) {
 		*numReturnedMoves = 0;
 		return NULL;
 	}
-	int round;
-	// Get current round
-	if (dv->num < 6) {
-		round = 1;
-	}
-	else {
-		if (dv->num % 5 == 0) {
-			round = dv->num / 5;
-		} else {
-			round = ((int)(dv->num / 5)) + 1;
-		}
-	}
-	// Get current location of dracula from last round
-	char LastMove[1][3];
-	LastMove[0][0] = dv->Path[5 * (round - 1) - 1][1];
-	LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
-	LastMove[0][2] = '\0';
-	int from = placeAbbrevToId(LastMove[0]);
-	// The following array can avoid the same city be added
 	int n = MapNumPlaces(dv->map);
 	int *repeated_city = calloc(n, sizeof(int));
-	// Counter is the number of connection
 	int counter = 0;
 	ConnList curr = MapGetConnections(dv->map, from);
 	while (curr != NULL) {
@@ -152,64 +320,62 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 		curr = curr->next;
 	}
 	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
-	// Get past 5 moves of dracula
 	char Past5Move[5][3];
-	if (round < 6) {
-		for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
+	if (round < 5) {
+		for (int i = 0, j = 4; i < round; i++, j+=5) {
 			Past5Move[i][0] = dv->Path[j][1];
 			Past5Move[i][1] = dv->Path[j][2];
 			Past5Move[i][2] = '\0';
 		}
 	} else {
-		for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
+		for (int i = 0, j = round - 5; i < 5; i++, j++) {
 			Past5Move[i][0] = dv->Path[4 + j * 5][1];
 			Past5Move[i][1] = dv->Path[4 + j * 5][2];
 			Past5Move[i][2] = '\0';
 		}
 	}
 	curr = MapGetConnections(dv->map, from);
-	// Check if dracula made hide move or double back in last round
 	if (from == HIDE || from == DOUBLE_BACK_1) {
-		if (round > 2) {
+		if (round > 1) {
 			char Last2Move[1][3];
-			Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
-			Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+			Last2Move[0][0] = dv->Path[5 * round - 6][1];
+			Last2Move[0][1] = dv->Path[5 * round - 6][2];
 			Last2Move[0][2] = '\0';
 			curr = MapGetConnections(dv->map, placeAbbrevToId(Last2Move[0]));
 		}
 	}
 	else if (from == DOUBLE_BACK_2) {
-		if (round > 3) {
+		if (round > 2) {
 			char Last3Move[1][3];
-			Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
-			Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+			Last3Move[0][0] = dv->Path[5 * round - 11][1];
+			Last3Move[0][1] = dv->Path[5 * round - 11][2];
 			Last3Move[0][2] = '\0';
 			curr = MapGetConnections(dv->map, placeAbbrevToId(Last3Move[0]));
 		}
 	}
 	else if (from == DOUBLE_BACK_3) {
-		if (round > 4) {
+		if (round > 3) {
 			char Last4Move[1][3];
-			Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
-			Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+			Last4Move[0][0] = dv->Path[5 * round - 16][1];
+			Last4Move[0][1] = dv->Path[5 * round - 16][2];
 			Last4Move[0][2] = '\0';
 			curr = MapGetConnections(dv->map, placeAbbrevToId(Last4Move[0]));
 		}
 	}
 	else if (from == DOUBLE_BACK_4) {
-		if (round > 5) {
+		if (round > 4) {
 			char Last5Move[1][3];
-			Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-			Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last5Move[0][0] = dv->Path[5 * round - 21][1];
+			Last5Move[0][1] = dv->Path[5 * round - 21][2];
 			Last5Move[0][2] = '\0';
 			curr = MapGetConnections(dv->map, placeAbbrevToId(Last5Move[0]));
 		}
 	}
 	else if (from == DOUBLE_BACK_5) {
-		if (round > 6) {
+		if (round > 5) {
 			char Last6Move[1][3];
-			Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-			Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last6Move[0][0] = dv->Path[5 * round - 26][1];
+			Last6Move[0][1] = dv->Path[5 * round - 26][2];
 			Last6Move[0][2] = '\0';
 			curr = MapGetConnections(dv->map, placeAbbrevToId(Last6Move[0]));
 		}
@@ -234,8 +400,8 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 
 		bool hasRepeatedMove = false;
 
-		if (round < 6) {
-			round_temp = round - 1;
+		if (round < 5) {
+			round_temp = round;
 		} else {
 			round_temp = 5;
 		}
@@ -276,11 +442,11 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 	} 
 	// If dracula did not made double back in the past 5 rounds
 	if (!hasRepeatedDB) {
-		if (round > 1) result[index++] = DOUBLE_BACK_1;
-		if (round > 2) result[index++] = DOUBLE_BACK_2;
-		if (round > 3) result[index++] = DOUBLE_BACK_3;
-		if (round > 4) result[index++] = DOUBLE_BACK_4;
-		if (round > 5) result[index++] = DOUBLE_BACK_5;
+		if (round > 0) result[index++] = DOUBLE_BACK_1;
+		if (round > 1) result[index++] = DOUBLE_BACK_2;
+		if (round > 2) result[index++] = DOUBLE_BACK_3;
+		if (round > 3) result[index++] = DOUBLE_BACK_4;
+		if (round > 4) result[index++] = DOUBLE_BACK_5;
 		result[index] = 999;
 	}
 	// If there is no legal move for dracula
@@ -296,70 +462,57 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	if (dv->num < 5) {
+	Player currPlayer = (dv->num) % 5;
+	int round = (dv->num) / 5;
+	if (currPlayer > PLAYER_DRACULA) {
+		round++;
+	}
+	PlaceId from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
+	if (from == NOWHERE) {
 		*numReturnedLocs = 0;
 		return NULL;
 	}
-	int round;
-	// Get current round
-	if (dv->num < 6) {
-		round = 1;
-	}
-	else {
-		if (dv->num % 5 == 0) {
-			round = dv->num / 5;
-		} else {
-			round = ((int)(dv->num / 5)) + 1;
-		}
-	}
-	// Get current location of dracula from last round
-	char LastMove[1][3];
-	LastMove[0][0] = dv->Path[5 * (round - 1) - 1][1];
-	LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
-	LastMove[0][2] = '\0';
-	int from = placeAbbrevToId(LastMove[0]);
-
 	if (from == HIDE || from == DOUBLE_BACK_1) {
-		if (round > 2) {
+		if (round > 1) {
 			char Last2Move[1][3];
-			Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
-			Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+			Last2Move[0][0] = dv->Path[5 * round - 6][1];
+			Last2Move[0][1] = dv->Path[5 * round - 6][2];
 			Last2Move[0][2] = '\0';
 			from = placeAbbrevToId(Last2Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_2) {
-		if (round > 3) {
+		if (round > 2) {
 			char Last3Move[1][3];
-			Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
-			Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+			Last3Move[0][0] = dv->Path[5 * round - 11][1];
+			Last3Move[0][1] = dv->Path[5 * round - 11][2];
 			Last3Move[0][2] = '\0';
 			from = placeAbbrevToId(Last3Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_3) {
-		if (round > 4) {
+		if (round > 3) {
 			char Last4Move[1][3];
-			Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
-			Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+			Last4Move[0][0] = dv->Path[5 * round - 16][1];
+			Last4Move[0][1] = dv->Path[5 * round - 16][2];
 			Last4Move[0][2] = '\0';
 			from = placeAbbrevToId(Last4Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_4) {
-		if (round > 5) {
+		if (round > 4) {
 			char Last5Move[1][3];
-			Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-			Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last5Move[0][0] = dv->Path[5 * round - 21][1];
+			Last5Move[0][1] = dv->Path[5 * round - 21][2];
 			Last5Move[0][2] = '\0';
 			from = placeAbbrevToId(Last5Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_5) {
-		if (round > 6) {
+		if (round > 5) {
 			char Last6Move[1][3];
-			Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-			Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last6Move[0][0] = dv->Path[5 * round - 26][1];
+			Last6Move[0][1] = dv->Path[5 * round - 26][2];
 			Last6Move[0][2] = '\0';
 			from = placeAbbrevToId(Last6Move[0]);
 		}
@@ -379,13 +532,13 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 	// Get past 5 moves of dracula
 	char Past5Move[5][3];
 	if (round < 6) {
-		for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
+		for (int i = 0, j = 4; i < round; i++, j+=5) {
 			Past5Move[i][0] = dv->Path[j][1];
 			Past5Move[i][1] = dv->Path[j][2];
 			Past5Move[i][2] = '\0';
 		}
 	} else {
-		for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
+		for (int i = 0, j = round - 5; i < 5; i++, j++) {
 			Past5Move[i][0] = dv->Path[4 + j * 5][1];
 			Past5Move[i][1] = dv->Path[4 + j * 5][2];
 			Past5Move[i][2] = '\0';
@@ -407,8 +560,8 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 			continue;
 		}
 		bool hasRepeatedMove = false;
-		if (round < 6) {
-			round_temp = round - 1;
+		if (round < 5) {
+			round_temp = round;
 		} else {
 			round_temp = 5;
 		}
@@ -445,69 +598,57 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
                              int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	if (dv->num < 5) {
+	Player currPlayer = (dv->num) % 5;
+	int round = (dv->num) / 5;
+	if (currPlayer > PLAYER_DRACULA) {
+		round++;
+	}
+	PlaceId from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
+	if (from == NOWHERE) {
 		*numReturnedLocs = 0;
 		return NULL;
 	}
-	int round;
-	// Get current round
-	if (dv->num < 6) {
-		round = 1;
-	}
-	else {
-		if (dv->num % 5 == 0) {
-			round = dv->num / 5;
-		} else {
-			round = ((int)(dv->num / 5)) + 1;
-		}
-	}
-	// Get current location of dracula from last round
-	char LastMove[1][3];
-	LastMove[0][0] = dv->Path[5 * (round - 1) - 1][1];
-	LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
-	LastMove[0][2] = '\0';
-	int from = placeAbbrevToId(LastMove[0]);
 	if (from == HIDE || from == DOUBLE_BACK_1) {
-		if (round > 2) {
+		if (round > 1) {
 			char Last2Move[1][3];
-			Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
-			Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+			Last2Move[0][0] = dv->Path[5 * round - 6][1];
+			Last2Move[0][1] = dv->Path[5 * round - 6][2];
 			Last2Move[0][2] = '\0';
 			from = placeAbbrevToId(Last2Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_2) {
-		if (round > 3) {
+		if (round > 2) {
 			char Last3Move[1][3];
-			Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
-			Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+			Last3Move[0][0] = dv->Path[5 * round - 11][1];
+			Last3Move[0][1] = dv->Path[5 * round - 11][2];
 			Last3Move[0][2] = '\0';
 			from = placeAbbrevToId(Last3Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_3) {
-		if (round > 4) {
+		if (round > 3) {
 			char Last4Move[1][3];
-			Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
-			Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+			Last4Move[0][0] = dv->Path[5 * round - 16][1];
+			Last4Move[0][1] = dv->Path[5 * round - 16][2];
 			Last4Move[0][2] = '\0';
 			from = placeAbbrevToId(Last4Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_4) {
-		if (round > 5) {
+		if (round > 4) {
 			char Last5Move[1][3];
-			Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-			Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last5Move[0][0] = dv->Path[5 * round - 21][1];
+			Last5Move[0][1] = dv->Path[5 * round - 21][2];
 			Last5Move[0][2] = '\0';
 			from = placeAbbrevToId(Last5Move[0]);
 		}
 	}
 	else if (from == DOUBLE_BACK_5) {
-		if (round > 6) {
+		if (round > 5) {
 			char Last6Move[1][3];
-			Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-			Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+			Last6Move[0][0] = dv->Path[5 * round - 26][1];
+			Last6Move[0][1] = dv->Path[5 * round - 26][2];
 			Last6Move[0][2] = '\0';
 			from = placeAbbrevToId(Last6Move[0]);
 		}
@@ -525,14 +666,14 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 	// Get past 5 moves of dracula
 	char Past5Move[5][3];
-	if (round < 6) {
-		for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
+	if (round < 5) {
+		for (int i = 0, j = 4; i < round; i++, j+=5) {
 			Past5Move[i][0] = dv->Path[j][1];
 			Past5Move[i][1] = dv->Path[j][2];
 			Past5Move[i][2] = '\0';
 		}
 	} else {
-		for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
+		for (int i = 0, j = round - 5; i < 5; i++, j++) {
 			Past5Move[i][0] = dv->Path[4 + j * 5][1];
 			Past5Move[i][1] = dv->Path[4 + j * 5][2];
 			Past5Move[i][2] = '\0';
@@ -542,6 +683,11 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 	curr = MapGetConnections(dv->map, from);
 	int index = 0;
 	int round_temp;
+	if (round < 6) {
+		round_temp = round;
+	} else {
+		round_temp = 5;
+	}
 	// Check if current adjacent city satisfy condition
 	while(curr != NULL) {
 		// Dracula can not move to hospital
@@ -555,11 +701,6 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 			continue;
 		}
 		bool hasRepeatedMove = false;
-		if (round < 6) {
-			round_temp = round - 1;
-		} else {
-			round_temp = 5;
-		}
 		// Check if dracula has made the same move in past 5 round
 		for (int i = 0; i < round_temp; i++) {
 			if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
@@ -598,75 +739,60 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
                           int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION	
-	int round;
-	// Get current round
-	if (dv->num < 6) {
-		round = 1;
+	Player currPlayer = (dv->num) % 5;
+	int round = (dv->num) / 5;
+	if (currPlayer > player) {
+		round++;
 	}
-	else {
-		if (dv->num % 5 == 0) {
-			round = dv->num / 5;
-		} else {
-			round = ((int)(dv->num / 5)) + 1;
-		}
-	}
+	PlaceId from;
 	int n = MapNumPlaces(dv->map);
 	// Two cities may be connected through multiple ways
 	// The following array is to avoid the same city be added
 	int *repeated_city = calloc(n, sizeof(int));
 	// If current player is dracula
 	if (player == PLAYER_DRACULA) {
-		if (dv->num < 5) {
-			*numReturnedLocs = 0;
-			return NULL;
-		}
-		// Get current location of dracula from last round
-		char LastMove[1][3];
-		LastMove[0][0] = dv->Path[5 * (round - 1) - 1][1];
-		LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
-		LastMove[0][2] = '\0';
-		int from = placeAbbrevToId(LastMove[0]);
+		from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
 		if (from == HIDE || from == DOUBLE_BACK_1) {
-			if (round > 2) {
+			if (round > 1) {
 				char Last2Move[1][3];
-				Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
-				Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+				Last2Move[0][0] = dv->Path[5 * round - 6][1];
+				Last2Move[0][1] = dv->Path[5 * round - 6][2];
 				Last2Move[0][2] = '\0';
 				from = placeAbbrevToId(Last2Move[0]);
 			}
 		}
 		else if (from == DOUBLE_BACK_2) {
-			if (round > 3) {
+			if (round > 2) {
 				char Last3Move[1][3];
-				Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
-				Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+				Last3Move[0][0] = dv->Path[5 * round - 11][1];
+				Last3Move[0][1] = dv->Path[5 * round - 11][2];
 				Last3Move[0][2] = '\0';
 				from = placeAbbrevToId(Last3Move[0]);
 			}
 		}
 		else if (from == DOUBLE_BACK_3) {
-			if (round > 4) {
+			if (round > 3) {
 				char Last4Move[1][3];
-				Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
-				Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+				Last4Move[0][0] = dv->Path[5 * round - 16][1];
+				Last4Move[0][1] = dv->Path[5 * round - 16][2];
 				Last4Move[0][2] = '\0';
 				from = placeAbbrevToId(Last4Move[0]);
 			}
 		}
 		else if (from == DOUBLE_BACK_4) {
-			if (round > 5) {
+			if (round > 4) {
 				char Last5Move[1][3];
-				Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-				Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last5Move[0][0] = dv->Path[5 * round - 21][1];
+				Last5Move[0][1] = dv->Path[5 * round - 21][2];
 				Last5Move[0][2] = '\0';
 				from = placeAbbrevToId(Last5Move[0]);
 			}
 		}
 		else if (from == DOUBLE_BACK_5) {
-			if (round > 6) {
+			if (round > 5) {
 				char Last6Move[1][3];
-				Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-				Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last6Move[0][0] = dv->Path[5 * round - 26][1];
+				Last6Move[0][1] = dv->Path[5 * round - 26][2];
 				Last6Move[0][2] = '\0';
 				from = placeAbbrevToId(Last6Move[0]);
 			}
@@ -682,13 +808,13 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		// Get past 5 moves of dracula
 		char Past5Move[5][3];
 		if (round < 6) {
-			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
+			for (int i = 0, j = 4; i < round; i++, j+=5) {
 				Past5Move[i][0] = dv->Path[j][1];
 				Past5Move[i][1] = dv->Path[j][2];
 				Past5Move[i][2] = '\0';
 			}
 		} else {
-			for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
+			for (int i = 0, j = round - 5; i < 5; i++, j++) {
 				Past5Move[i][0] = dv->Path[4 + j * 5][1];
 				Past5Move[i][1] = dv->Path[4 + j * 5][2];
 				Past5Move[i][2] = '\0';
@@ -698,6 +824,11 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		curr = MapGetConnections(dv->map, from);
 		int index = 0;
 		int round_temp;
+		if (round < 5) {
+			round_temp = round;
+		} else {
+			round_temp = 5;
+		}
 		// Check if current adjacent place satisfy condition
 		while(curr != NULL) {
 		// Dracula can not move to hospital
@@ -711,11 +842,6 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 			continue;
 		}
 		bool hasRepeatedMove = false;
-		if (round < 6) {
-			round_temp = round - 1;
-		} else {
-			round_temp = 5;
-		}
 		// Check if dracula has made the same move in past 5 round
 		for (int i = 0; i < round_temp; i++) {
 			if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
@@ -745,51 +871,21 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 	return result;
 	// If current player is hunter
 	} else {
-		char LastMove[1][3];
-		int from;
 		if (player == PLAYER_LORD_GODALMING) {
-			// If current player has not made a move yet
-			if (dv->num < 1) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2)][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2)][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_LORD_GODALMING);
 		} 
 		else if (player == PLAYER_DR_SEWARD) {
-			// If current player has not made a move yet
-			if (dv->num < 2) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2) + 1][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2) + 1][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_DR_SEWARD);
 		} 
 		else if (player == PLAYER_VAN_HELSING) {
-			// If current player has not made a move yet
-			if (dv->num < 3) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2) + 2][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2) + 2][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_VAN_HELSING);
 		} 
 		else if (player == PLAYER_MINA_HARKER) {
-			// If current player has not made a move yet
-			if (dv->num < 4) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2) + 3][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2) + 3][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_MINA_HARKER);
+		}
+		if (from == NOWHERE) {
+			*numReturnedLocs = 0;
+			return NULL;
 		}
 		ConnList curr = MapGetConnections(dv->map, from);
 		// Counter is the number of connection
@@ -847,57 +943,43 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
                                 int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	int round;
-	// Get current round
-	if (dv->num < 6) {
-		round = 1;
+	Player currPlayer = (dv->num) % 5;
+	int round = (dv->num) / 5;
+	if (currPlayer > player) {
+		round++;
 	}
-	else {
-		if (dv->num % 5 == 0) {
-			round = dv->num / 5;
-		} else {
-			round = ((int)(dv->num / 5)) + 1;
-		}
-	}
+	PlaceId from;
 	int n = MapNumPlaces(dv->map);
-	// Two cities may be connected through multiple ways
-	// The following array is to avoid the same city be added
 	int *repeated_city = calloc(n, sizeof(int));
-	// If current player is dracula
 	if (player == PLAYER_DRACULA) {
-		if (dv->num < 5) {
+		from = DvGetPlayerLocation(dv, PLAYER_DRACULA);
+		if (from == NOWHERE) {
 			*numReturnedLocs = 0;
 			return NULL;
 		}
-		// Get current location of dracula from last round
-		char LastMove[1][3];
-		LastMove[0][0] = dv->Path[5 * (round - 1) - 1][1];
-		LastMove[0][1] = dv->Path[5 * (round - 1) - 1][2];
-		LastMove[0][2] = '\0';
-		int from = placeAbbrevToId(LastMove[0]);
 		if (from == HIDE || from == DOUBLE_BACK_1) {
-			if (round > 2) {
+			if (round > 1) {
 				char Last2Move[1][3];
-				Last2Move[0][0] = dv->Path[5 * (round - 1) - 6][1];
-				Last2Move[0][1] = dv->Path[5 * (round - 1) - 6][2];
+				Last2Move[0][0] = dv->Path[5 * round - 6][1];
+				Last2Move[0][1] = dv->Path[5 * round - 6][2];
 				Last2Move[0][2] = '\0';
 				from = placeAbbrevToId(Last2Move[0]);
 			}
 		}
 		else if (from == DOUBLE_BACK_2) {
-			if (round > 3) {
+			if (round > 2) {
 				char Last3Move[1][3];
-				Last3Move[0][0] = dv->Path[5 * (round - 1) - 11][1];
-				Last3Move[0][1] = dv->Path[5 * (round - 1) - 11][2];
+				Last3Move[0][0] = dv->Path[5 * round - 11][1];
+				Last3Move[0][1] = dv->Path[5 * round - 11][2];
 				Last3Move[0][2] = '\0';
 				from = placeAbbrevToId(Last3Move[0]);
 			}
 		}
 		else if (from == DOUBLE_BACK_3) {
-			if (round > 4) {
+			if (round > 3) {
 				char Last4Move[1][3];
-				Last4Move[0][0] = dv->Path[5 * (round - 1) - 16][1];
-				Last4Move[0][1] = dv->Path[5 * (round - 1) - 16][2];
+				Last4Move[0][0] = dv->Path[5 * round - 16][1];
+				Last4Move[0][1] = dv->Path[5 * round - 16][2];
 				Last4Move[0][2] = '\0';
 				from = placeAbbrevToId(Last4Move[0]);
 			}
@@ -905,8 +987,8 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		else if (from == DOUBLE_BACK_4) {
 			if (round > 5) {
 				char Last5Move[1][3];
-				Last5Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-				Last5Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last5Move[0][0] = dv->Path[5 * round - 21][1];
+				Last5Move[0][1] = dv->Path[5 * round - 21][2];
 				Last5Move[0][2] = '\0';
 				from = placeAbbrevToId(Last5Move[0]);
 			}
@@ -914,13 +996,12 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		else if (from == DOUBLE_BACK_5) {
 			if (round > 6) {
 				char Last6Move[1][3];
-				Last6Move[0][0] = dv->Path[5 * (round - 1) - 21][1];
-				Last6Move[0][1] = dv->Path[5 * (round - 1) - 21][2];
+				Last6Move[0][0] = dv->Path[5 * round - 26][1];
+				Last6Move[0][1] = dv->Path[5 * round - 26][2];
 				Last6Move[0][2] = '\0';
 				from = placeAbbrevToId(Last6Move[0]);
 			}
 		}
-		// Counter is the number of connection
 		int counter = 0;
 		ConnList curr = MapGetConnections(dv->map, from);
 		while (curr != NULL) {
@@ -928,16 +1009,15 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 			curr = curr->next;
 		}
 		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
-		// Get past 5 moves of dracula
 		char Past5Move[5][3];
-		if (round < 6) {
-			for (int i = 0, j = 4; i < round - 1; i++, j+=5) {
+		if (round < 5) {
+			for (int i = 0, j = 4; i < round; i++, j+=5) {
 				Past5Move[i][0] = dv->Path[j][1];
 				Past5Move[i][1] = dv->Path[j][2];
 				Past5Move[i][2] = '\0';
 			}
 		} else {
-			for (int i = 0, j = round - 5 - 1; i < 5; i++, j++) {
+			for (int i = 0, j = round - 5; i < 5; i++, j++) {
 				Past5Move[i][0] = dv->Path[4 + j * 5][1];
 				Past5Move[i][1] = dv->Path[4 + j * 5][2];
 				Past5Move[i][2] = '\0';
@@ -947,113 +1027,76 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		curr = MapGetConnections(dv->map, from);
 		int index = 0;
 		int round_temp;
-		// Check whether a adjacent place satisfy condition
-		while(curr != NULL) {
-		// Dracula can not move to hospital
-		if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-			curr = curr->next;
-			continue;
-		}
-		// Dracula can not move through rail
-		if (curr->type == RAIL) {
-			curr = curr->next;
-			continue;
-		}
-		bool hasRepeatedMove = false;
-		if (round < 6) {
-			round_temp = round - 1;
+		if (round < 5) {
+			round_temp = round;
 		} else {
 			round_temp = 5;
 		}
-		// Check if dracula has made the same move in past 5 round
-		for (int i = 0; i < round_temp; i++) {
-			if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
-				hasRepeatedMove = true;
+		curr = MapGetConnections(dv->map, from);
+		while(curr != NULL) {
+			if (curr->type == RAIL 
+			|| repeated_city[curr->p] == 1 
+			|| curr->p == ST_JOSEPH_AND_ST_MARY) {
+				curr = curr->next;
+				continue;
 			}
-		}
-		// Skip to next adjacent place
-		if (hasRepeatedMove) {
+			bool hasRepeatedMove = false;
+			// Check if dracula has made the same move in past 5 round
+			for (int i = 0; i < round_temp; i++) {
+				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
+					hasRepeatedMove = true;
+				}
+			}
+			// Skip to next adjacent place
+			if (hasRepeatedMove) {
+				curr = curr->next;
+				continue;
+			}
+			// If current place satisfy condition
+			if (curr->type == ROAD && road == true) {
+				result[index++] = curr->p;
+				result[index] = 999;
+				repeated_city[curr->p] = 1;
+			}
+			else if (curr->type == BOAT && boat == true) {
+				result[index++] = curr->p;
+				result[index] = 999;
+				repeated_city[curr->p] = 1;
+			}
 			curr = curr->next;
-			continue;
 		}
-		// If current place satisfy condition
-		if (curr->type == ROAD && road == true && repeated_city[curr->p] == 0) {
-			result[index++] = curr->p;
-			result[index] = 999;
-			repeated_city[curr->p] = 1;
-		}
-		else if (curr->type == BOAT && boat == true && repeated_city[curr->p] == 0) {
-			result[index++] = curr->p;
-			result[index] = 999;
-			repeated_city[curr->p] = 1;
-		}
-
-		curr = curr->next;
-		}
-	// If there is no valid move for dracula
-	if (index == 0) {
-		*numReturnedLocs = 0;
-		return NULL;
-	}
-	*numReturnedLocs = GetLenOfList(result);
-	return result;
-	// If current player is hunter
-	} else {
-		char LastMove[1][3];
-		int from;
-		if (player == PLAYER_LORD_GODALMING) {
-			// If current player has not made a move yet
-			if (dv->num < 1) {
+		// If there is no valid move for dracula
+		if (index == 0) {
 				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2)][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2)][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+		return NULL;
+		}
+		*numReturnedLocs = GetLenOfList(result);
+		return result;
+		// If current player is hunter
+	} else {
+		if (player == PLAYER_LORD_GODALMING) {
+			from = DvGetPlayerLocation(dv, PLAYER_LORD_GODALMING);
 		} 
 		else if (player == PLAYER_DR_SEWARD) {
-			// If current player has not made a move yet
-			if (dv->num < 2) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2) + 1][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2) + 1][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_DR_SEWARD);
 		} 
 		else if (player == PLAYER_VAN_HELSING) {
-			// If current player has not made a move yet
-			if (dv->num < 3) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2) + 2][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2) + 2][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_VAN_HELSING);
 		} 
 		else if (player == PLAYER_MINA_HARKER) {
-			// If current player has not made a move yet
-			if (dv->num < 4) {
-				*numReturnedLocs = 0;
-				return NULL;
-			}
-			LastMove[0][0] = dv->Path[5 * (round - 2) + 3][1];
-			LastMove[0][1] = dv->Path[5 * (round - 2) + 3][2];
-			LastMove[0][2] = '\0';
-			from = placeAbbrevToId(LastMove[0]);
+			from = DvGetPlayerLocation(dv, PLAYER_MINA_HARKER);
+		}
+		if (from == NOWHERE) {
+			*numReturnedLocs = 0;
+			return NULL;
 		}
 		ConnList curr = MapGetConnections(dv->map, from);
-		// Counter is the number of connection
 		int counter = 0;
 		while (curr != NULL) {
 			counter++;
 			curr = curr->next;
 		}
 		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
-		curr = MapGetConnections(dv->map, from);
 		int index = 0;
 		int max_distance = round % 4;
 		// Get the places connected through rail
@@ -1061,6 +1104,7 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 		if (rail == true) {
 			RailList = GetConnRail(dv->map, from, max_distance, repeated_city);
 		}
+		curr = MapGetConnections(dv->map, from);
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -1102,6 +1146,79 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
+int dvGetRoundHealth(DraculaView dv, Player player, int health, int round) {
+	assert(dv != NULL);
+	// Convert the palce in path char
+	char place1[3];
+	place1[0] = dv->Path[round][1];
+	place1[1] = dv->Path[round][2];
+	place1[2] = '\0';
+	// Caculate the health value of Dracula
+	if (player != PLAYER_DRACULA) {
+		// Encounter the trap or Vampire
+		for (int j = 3; j < 7; j++) {
+			if (dv->Path[round][j] == 'T') health -= LIFE_LOSS_TRAP_ENCOUNTER;
+			if (dv->Path[round][j] == 'D') health -= LIFE_LOSS_DRACULA_ENCOUNTER;
+		}
+		if (round >= NUM_PLAYERS){
+			char place2[8];
+			place2[0] = dv->Path[round - NUM_PLAYERS][1];
+			place2[1] = dv->Path[round - NUM_PLAYERS][2];
+			place2[2] = '\0';
+			if (PlaceCmp(place1,place2))
+			health += LIFE_GAIN_REST;
+			if (health > GAME_START_HUNTER_LIFE_POINTS)
+			health = GAME_START_HUNTER_LIFE_POINTS;
+		}
+	}
+	// Caculate the health value of Hunter
+	if (player == PLAYER_DRACULA) {
+		// Double back move check
+		if (DnumCheck(placeAbbrevToId(place1))) {
+			int backmove = placeAbbrevToId(place1) - DOUBLE_BACK_1 + 1;
+			/*PlaceId *move =
+			dvGetLastLocations(dv, player, backmove, false);
+			place1 = placeIdToAbbrev(move[backmove])*/
+			backmove *= NUM_PLAYERS;
+			backmove = round - backmove;
+			place1[0] = dv->Path[backmove][1];
+			place1[1] = dv->Path[backmove][2];
+			place1[2] = '\0'; 
+		}
+		// Caculate the health when encounter the hunter
+		for (int j = round + 1; j < dv->num 
+		&& j < round + NUM_PLAYERS; j++) {
+			char place2[3];
+			place2[0] = dv->Path[j][1];
+			place2[1] = dv->Path[j][2];
+			place2[2] = '\0';
+			if (PlaceCmp(place2, place1))
+			health -= LIFE_LOSS_HUNTER_ENCOUNTER;
+		}
+		if (placeIsSea(placeAbbrevToId(place1))) {
+			health -= LIFE_LOSS_SEA;
+		}
+		//Gain the health in Castle Dracula
+		if (PlaceCmp(place1, "TP") || PlaceCmp(place1, "CD"))
+		health += LIFE_GAIN_CASTLE_DRACULA;
+	}
+	return health;
+}
+
+// help function
+// change hunter adt into gameview adt
+static GameView draculaToGame(DraculaView dv) {
+	Message messages[] = {};
+	char *originPast = malloc(8*dv->num);
+	for (int i = 0; i < dv->num; i++) {
+		strcat(originPast, dv->Path[i]);
+		if (i != dv->num-1) {
+			strcat(originPast, " ");
+		}
+	}
+	return GvNew(originPast, messages);
+}
 
 // TODO
 // get the number of element in an array
+

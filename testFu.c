@@ -21,14 +21,14 @@ int main (void)
 {	
 	
 	printf("Testing function GvGetReachable:\n");
-	printf("\tROUND 1\n");
+	printf("\tROUND 0\n");
 	char *trail = "";
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 	{
 		printf("\nChecking Galatz connections\n");
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 1, GALATZ, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 0, GALATZ, &numLocs);
 		printf("\nThe number of accessible cities is %d\n", numLocs);
 		printf("\nAccessiable cities: ");
 		for (int i = 0; i < numLocs; i++) {
@@ -40,7 +40,7 @@ int main (void)
 	{
 		printf("\nChecking Santander connections\n");
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 1, SANTANDER, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 0, SANTANDER, &numLocs);
 		printf("\nThe number of accessible cities is %d\n", numLocs);
 		printf("\nAccessiable cities: ");
 		for (int i = 0; i < numLocs; i++) {
@@ -52,7 +52,7 @@ int main (void)
 	{
 		printf("\nChecking Marseilles connections\n");
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 1, MARSEILLES, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 0, MARSEILLES, &numLocs);
 		printf("\nThe number of accessible cities is %d\n", numLocs);
 		printf("\nAccessiable cities: ");
 		for (int i = 0; i < numLocs; i++) {
@@ -64,7 +64,7 @@ int main (void)
 	{
 		printf("\nChecking Venice connections\n");
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 1, VENICE, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 0, VENICE, &numLocs);
 		printf("\nThe number of accessible cities is %d\n", numLocs);
 		printf("\nAccessiable cities: ");
 		for (int i = 0; i < numLocs; i++) {
@@ -74,15 +74,15 @@ int main (void)
 	}
 
     printf("\nChecking location move of dracula\n");
-	printf("\tROUND 2 \n");
+	printf("\tROUND 1 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V..";
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 2, ROME, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 1, ROME, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
-		printf("\nChecking accessible cities of Dracula in Round 2\n");
+		printf("\nChecking accessible cities of Dracula in Round 1\n");
 		printf("\nThe current location is Rome\n");
 		printf("\nThe number of accessible cities is %d\n", numLocs);
 		printf("\nAccessiable cities: ");
@@ -91,14 +91,14 @@ int main (void)
 		}
 		printf("\n");
 	}
-	printf("\tROUND 3 \n");
+	printf("\tROUND 2 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GMN.... SPL.... HAM.... MPA.... DFL.V..";
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 3, FLORENCE, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 2, FLORENCE, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Dracula in Round 3\n");
 		printf("\nThe current location is Florence\n");
@@ -110,7 +110,7 @@ int main (void)
 		printf("\n");
 	} 
 	
-	printf("\tROUND 4 \n");
+	printf("\tROUND 3 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GMN.... SPL.... HAM.... MPA.... DFL.V.. "
@@ -118,7 +118,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 4, VENICE, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 3, VENICE, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Dracula in Round 4\n");
 		printf("\nThe current location is Venice\n");
@@ -129,7 +129,7 @@ int main (void)
 		}
 		printf("\n");
 	} 
-	printf("\tROUND 5 \n");
+	printf("\tROUND 4 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GMN.... SPL.... HAM.... MPA.... DFL.V.. "
@@ -138,7 +138,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 5, MUNICH, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 4, MUNICH, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Dracula in Round 5\n");
 		printf("\nThe current location is Munich\n");
@@ -149,7 +149,7 @@ int main (void)
 		}
 		printf("\n");
 	}
-	printf("\tROUND 6 \n");
+	printf("\tROUND 5 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GMN.... SPL.... HAM.... MPA.... DFL.V.. "
@@ -159,7 +159,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 6, ZAGREB,&numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 5, ZAGREB,&numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Dracula in Round 6\n");
 		printf("\nThe number of accessible cities is %d\n", numLocs);
@@ -170,7 +170,7 @@ int main (void)
 		printf("\n");
 	}
 
-	printf("\tROUND 7 \n");
+	printf("\tROUND 6 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GMN.... SPL.... HAM.... MPA.... DFL.V.. "
@@ -181,7 +181,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 7, VIENNA,&numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_DRACULA, 6, VIENNA,&numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Dracula in Round 7\n");
 		printf("\nThe number of accessible cities is %d\n", numLocs);
@@ -201,7 +201,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs1 = GvGetReachable(gv, PLAYER_DRACULA, 2, ROME,&numLocs);
+		PlaceId *locs1 = GvGetReachable(gv, PLAYER_DRACULA, 1, ROME,&numLocs);
 		
 		int n = GetLenOfList(locs1);
 		printf("\nThe length of this list is %d\n", n);
@@ -215,13 +215,13 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs1 = GvGetReachable(gv, PLAYER_DRACULA, 2, ROME,&numLocs);
+		PlaceId *locs1 = GvGetReachable(gv, PLAYER_DRACULA, 1, ROME,&numLocs);
 
 		trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 				"GMN.... SPL.... HAM.... MPA.... DFL.V..";
 		gv = GvNew(trail, messages);
 		numLocs = -1;
-		PlaceId *locs2 = GvGetReachable(gv, PLAYER_DRACULA, 3, FLORENCE,&numLocs);
+		PlaceId *locs2 = GvGetReachable(gv, PLAYER_DRACULA, 2, FLORENCE,&numLocs);
 		PlaceId *newList = MergeList(locs1, locs2);
 		
 		int n = GetLenOfList(newList);
@@ -257,7 +257,7 @@ int main (void)
 		repeated_city = calloc(m, sizeof(int));
 		locs = GetConnRail(gv->map, ROME, 3, repeated_city);
 		n = GetLenOfList(locs);		
-		printf("\nWhen maximum distance is 2\n");
+		printf("\nWhen maximum distance is 3\n");
 		for (int i = 0; i < n; i++) {
 			printf("%s(%d) ", placeIdToName(locs[i]), i + 1);
 		}
@@ -265,14 +265,13 @@ int main (void)
 
 	// Test move of huner
 	printf("Checking move of hunters(Goadlming) by using function GvGetReachable\n");
-	// ROUND2
-	printf("\n\tROUND 2 \n");
+	printf("\n\tROUND 1 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V..";
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 2, MANCHESTER, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 1, MANCHESTER, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Goadlming in Round 2\n");
 		printf("\nThe current location is Manchester\n");
@@ -284,14 +283,14 @@ int main (void)
 		printf("\n");
 	}
 	// ROUND3
-	printf("\n\tROUND 3 \n");
+	printf("\n\tROUND 2 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GED.... SPL.... HAM.... MPA.... DRO.V..";
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 3, EDINBURGH, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 2, EDINBURGH, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Goadlming in Round 3\n");
 		printf("\nThe current location is Edinburgh\n");
@@ -303,7 +302,7 @@ int main (void)
 		printf("\n");
 	}
 	// ROUND4
-	printf("\n\tROUND 4 \n");
+	printf("\n\tROUND 3 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GED.... SPL.... HAM.... MPA.... DRO.V.. "
@@ -311,7 +310,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 4, NORTH_SEA, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 3, NORTH_SEA, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Goadlming in Round 4\n");
 		printf("\nThe current location is NorthSea\n");
@@ -323,7 +322,7 @@ int main (void)
 		printf("\n");
 	}
 	// ROUND5
-	printf("\n\tROUND 5 \n");
+	printf("\n\tROUND 4 \n");
 	{	
 		char *trail = "GMN.... SPL.... HAM.... MPA.... DRO.V.. "
 					  "GED.... SPL.... HAM.... MPA.... DRO.V.. "
@@ -332,7 +331,7 @@ int main (void)
 		Message messages[] = {};
 		GameView gv = GvNew(trail, messages);
 		int numLocs = -1;
-		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 5, AMSTERDAM, &numLocs);
+		PlaceId *locs = GvGetReachable(gv, PLAYER_LORD_GODALMING, 4, AMSTERDAM, &numLocs);
 		printf("\nThe number of path in GameView is %d\n", gv->num);
 		printf("\nChecking accessible cities of Goadlming in Round 5\n");
 		printf("\nThe current location is Amsterdam\n");

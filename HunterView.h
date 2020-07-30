@@ -214,7 +214,6 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
-
-// TODO
+int HvGetRoundHealth(HunterView hv, Player player, int health, int i);
 
 #endif // !defined (FOD__HUNTER_VIEW_H_)
