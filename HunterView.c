@@ -486,6 +486,9 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	}
 	cleanplaceLis(placeList);
 	*numReturnedLocs = lenNum;
+	MYBOAT = 1;
+	MYRAIL = 1;
+	MYROAD = 1;
 	return result;
 }
 
