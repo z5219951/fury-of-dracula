@@ -667,7 +667,7 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 	curr = MapGetConnections(dv->map, from);
 	int index = 0;
 	int round_temp;
-	if (round < 6) {
+	if (round < 5) {
 		round_temp = round;
 	} else {
 		round_temp = 5;
