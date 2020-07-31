@@ -15,16 +15,16 @@ BINS = testGameView testHunterView testDraculaView testMap testFu testDvFu testH
 
 all: $(BINS)
 
-testHvFu: testHvFu.o testUtils.o GameView.o HunterView.o Map.o Places.o Queue.o Map.o QueueYue.o
-testHvFu.o: testHvFu.c GameView.h HunterView.h Map.h Places.h Game.h Queue.h Map.h QueueYue.h
+testHvFu: testHvFu.o testUtils.o GameView.o HunterView.o Map.o Places.o Queue.o Map.o 
+testHvFu.o: testHvFu.c GameView.h HunterView.h Map.h Places.h Game.h Queue.h Map.h 
 
 testDvFu:testDvFu.o testUtils.o GameView.o DraculaView.o Map.o Places.o Queue.o Map.o
 testDvFu.o: testDvFu.c GameView.h DraculaView.h Map.h Places.h Game.h Queue.h Map.h
 
 testFu: testFu.o testUtils.o GameView.o Map.o Places.o Queue.o Map.o
 testFu.o: testFu.c GameView.h Map.h Places.h Game.h Queue.h Map.h
-testHunterView: testHunterView.o testUtils.o HunterView.o GameView.o Map.o Places.o QueueYue.o
-testHunterView.o: testHunterView.c HunterView.h GameView.h Map.h Places.h Game.h QueueYue.h
+testHunterView: testHunterView.o testUtils.o HunterView.o GameView.o Map.o Places.o 
+testHunterView.o: testHunterView.c HunterView.h GameView.h Map.h Places.h Game.h 
 
 testGameView: testGameView.o testUtils.o GameView.o Map.o Places.o Queue.o
 testGameView.o: testGameView.c GameView.h Map.h Places.h Game.h Queue.h
@@ -38,7 +38,6 @@ testDraculaView.o: testDraculaView.c DraculaView.h GameView.h Map.h Places.h Gam
 testMap: testMap.o Map.o Places.o
 testMap.o: testMap.c Map.h Places.h
 
-QueueYue.o:	QueueYue.c QueueYue.h
 Places.o: Places.c Places.h Game.h
 Map.o: Map.c Map.h Places.h Game.h
 GameView.o:	GameView.c GameView.h Game.h Queue.h Map.h
@@ -47,7 +46,7 @@ DraculaView.o: DraculaView.c DraculaView.h Game.h
 testUtils.o: testUtils.c Places.h Game.h
 Queue.o: Queue.c Queue.h Game.h
 
-sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o HunterView.o DraculaView.o QueueYue.o
+sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o HunterView.o DraculaView.o
 
 .PHONY: clean
 clean:

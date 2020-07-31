@@ -20,7 +20,8 @@
 #include "Places.h"
 // add your own #includes here
 #include<string.h>
-#include "QueueYue.h"
+
+#include "Queue.h"
 // TODO: ADD YOUR OWN STRUCTS HERE
 
 struct hunterView {
@@ -836,9 +837,9 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 	assert (hv != NULL);
 	int maxLen = MapNumPlaces(hv->map); 
 	PlaceId *visited = calloc(maxLen,sizeof(PlaceId));
-	QueueYue q = newQueueYue();
+	Queue q = newQueue();
 	PlaceId src = placeList->start;
-	QueueYueJoin(q, src);
+	QueueJoin(q, src);
 	int isFound = 0;
 	int *new_path = calloc(maxLen,sizeof(PlaceId));
 
@@ -849,8 +850,8 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 		new_path[i] = -1;
 	}
 	levelRecord[src] = placeList->round;
-	while (!QueueYueIsEmpty(q) && !isFound) {
-		PlaceId y,x = QueueYueLeave(q);
+	while (!QueueIsEmpty(q) && !isFound) {
+		PlaceId y,x = QueueLeave(q);
 		if (visited[x]) {
 			continue;
 		}
@@ -862,7 +863,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 			new_path[y] = x;
 			if (y == dest) { isFound = 1;break; }
 			if (!visited[y]) { 
-				QueueYueJoin(q,y);
+				QueueJoin(q,y);
 			}
 		}
 	}
