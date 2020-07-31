@@ -46,7 +46,6 @@ DraculaView.o: DraculaView.c DraculaView.h Game.h
 testUtils.o: testUtils.c Places.h Game.h
 Queue.o: Queue.c Queue.h Game.h
 
-sallytest: sallytest.o testUtils.o GameView.o Map.o Places.o HunterView.o DraculaView.o
 
 .PHONY: clean
 clean:
