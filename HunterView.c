@@ -352,6 +352,9 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 	}
 
 	PlaceId startId = lastPlace[0];
+	if (HvGetHealth(hv,hunter) == 0) {
+		startId = ST_JOSEPH_AND_ST_MARY;
+	}
 	int maxLen = MapNumPlaces(MapNew());
 	HunterReach placeList = malloc(sizeof(HunterReach));
 	int lenNum = 0;
@@ -434,6 +437,9 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	}
 
 	PlaceId startId = lastPlace[0];
+	if (HvGetHealth(hv,hunter) == 0) {
+		startId = ST_JOSEPH_AND_ST_MARY;
+	}
 	int maxLen = MapNumPlaces(MapNew());
 	HunterReach placeList = malloc(sizeof(HunterReach));
 	int lenNum = 0;
@@ -519,7 +525,11 @@ PlaceId *HvWhereCanTheyGo(HunterView hv, Player player,
 		round+=1;
 	}
 	int testReturn;
-	PlaceId *result = GvGetReachable(trans,player, round,lastPlace[0], &testReturn);
+	PlaceId start = lastPlace[0];
+	if ((player != PLAYER_DRACULA) && (HvGetHealth(hv,player) == 0)) {
+		start = ST_JOSEPH_AND_ST_MARY;
+	}
+	PlaceId *result = GvGetReachable(trans,player, round,start, &testReturn);
 	*numReturnedLocs = testReturn;
 	return result;
 }
@@ -544,7 +554,11 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 		round+=1;
 	}
 	int testReturn;
-	PlaceId *result = GvGetReachableByType(trans,player, round,lastPlace[0],road,rail, boat,&testReturn);
+	PlaceId start = lastPlace[0];
+	if ((player != PLAYER_DRACULA) && (HvGetHealth(hv,player) == 0)) {
+		start = ST_JOSEPH_AND_ST_MARY;
+	}
+	PlaceId *result = GvGetReachableByType(trans,player, round,start,road,rail, boat,&testReturn);
 	*numReturnedLocs = testReturn;
 	return result;
 }
