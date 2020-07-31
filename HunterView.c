@@ -20,7 +20,8 @@
 #include "Places.h"
 // add your own #includes here
 #include<string.h>
-#include "QueueYue.h"
+
+#include "Queue.h"
 // TODO: ADD YOUR OWN STRUCTS HERE
 
 struct hunterView {
@@ -60,6 +61,9 @@ static bool connectCheck(HunterView hv, HunterReach placeList,PlaceId src, Place
 
 // clean placeList
 static void cleanplaceLis(HunterReach placeList);
+
+// free placeList
+static void freePlaceLis(HunterReach placeList);
 
 // check repeat places
 static int checkPlaceRe(PlaceId *list, int len, PlaceId target);
@@ -405,6 +409,7 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 	}
 	cleanplaceLis(placeList);
 	*numReturnedLocs = lenNum;
+	freePlaceLis(placeList);
 	return result;
 }
 
@@ -491,6 +496,7 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	MYBOAT = 1;
 	MYRAIL = 1;
 	MYROAD = 1;
+	freePlaceLis(placeList);
 	return result;
 }
 
@@ -512,6 +518,51 @@ PlaceId *HvWhereCanTheyGo(HunterView hv, Player player,
 			*numReturnedLocs = 0;
 			return NULL;
 		}
+		if (from == HIDE || from == DOUBLE_BACK_1) {
+			if (round > 1) {
+				char Last2Move[1][3];
+				Last2Move[0][0] = hv->Path[5 * round - 6][1];
+				Last2Move[0][1] = hv->Path[5 * round - 6][2];
+				Last2Move[0][2] = '\0';
+				from = placeAbbrevToId(Last2Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_2) {
+			if (round > 2) {
+				char Last3Move[1][3];
+				Last3Move[0][0] = hv->Path[5 * round - 11][1];
+				Last3Move[0][1] = hv->Path[5 * round - 11][2];
+				Last3Move[0][2] = '\0';
+				from = placeAbbrevToId(Last3Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_3) {
+			if (round > 3) {
+				char Last4Move[1][3];
+				Last4Move[0][0] = hv->Path[5 * round - 16][1];
+				Last4Move[0][1] = hv->Path[5 * round - 16][2];
+				Last4Move[0][2] = '\0';
+				from = placeAbbrevToId(Last4Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_4) {
+			if (round > 4) {
+				char Last5Move[1][3];
+				Last5Move[0][0] = hv->Path[5 * round - 21][1];
+				Last5Move[0][1] = hv->Path[5 * round - 21][2];
+				Last5Move[0][2] = '\0';
+				from = placeAbbrevToId(Last5Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_5) {
+			if (round > 5) {
+				char Last6Move[1][3];
+				Last6Move[0][0] = hv->Path[5 * round - 26][1];
+				Last6Move[0][1] = hv->Path[5 * round - 26][2];
+				Last6Move[0][2] = '\0';
+				from = placeAbbrevToId(Last6Move[0]);
+			}
+		}
 		int counter = 0;
 		ConnList curr = MapGetConnections(hv->map, from);
 		while (curr != NULL) {
@@ -522,7 +573,7 @@ PlaceId *HvWhereCanTheyGo(HunterView hv, Player player,
 		result[0] = from;
 		result[1] = 999;
 		char Past5Move[5][3];
-		if (round < 6) {
+		if (round < 5) {
 			for (int i = 0, j = 4; i < round; i++, j+=5) {
 				Past5Move[i][0] = hv->Path[j][1];
 				Past5Move[i][1] = hv->Path[j][2];
@@ -629,24 +680,66 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 	}
 	int n = MapNumPlaces(hv->map);
 	int *repeated_city = calloc(n, sizeof(int));
-	int numReturn = 0;
-    bool canFree = false;
-    GameView trans = hunterToGame(hv);
-    PlaceId *from = GvGetLastLocations(trans, player, 1, &numReturn, &canFree );
+    PlaceId from;
 	if (player == PLAYER_DRACULA) {
-		*from = HvGetLastKnownDraculaLocation(hv, &round);
-		if (*from == NOWHERE) {
+		from = HvGetLastKnownDraculaLocation(hv, &round);
+		if (from == NOWHERE) {
 			*numReturnedLocs = 0;
 			return NULL;
 		}
+		if (from == HIDE || from == DOUBLE_BACK_1) {
+			if (round > 1) {
+				char Last2Move[1][3];
+				Last2Move[0][0] = hv->Path[5 * round - 6][1];
+				Last2Move[0][1] = hv->Path[5 * round - 6][2];
+				Last2Move[0][2] = '\0';
+				from = placeAbbrevToId(Last2Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_2) {
+			if (round > 2) {
+				char Last3Move[1][3];
+				Last3Move[0][0] = hv->Path[5 * round - 11][1];
+				Last3Move[0][1] = hv->Path[5 * round - 11][2];
+				Last3Move[0][2] = '\0';
+				from = placeAbbrevToId(Last3Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_3) {
+			if (round > 3) {
+				char Last4Move[1][3];
+				Last4Move[0][0] = hv->Path[5 * round - 16][1];
+				Last4Move[0][1] = hv->Path[5 * round - 16][2];
+				Last4Move[0][2] = '\0';
+				from = placeAbbrevToId(Last4Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_4) {
+			if (round > 4) {
+				char Last5Move[1][3];
+				Last5Move[0][0] = hv->Path[5 * round - 21][1];
+				Last5Move[0][1] = hv->Path[5 * round - 21][2];
+				Last5Move[0][2] = '\0';
+				from = placeAbbrevToId(Last5Move[0]);
+			}
+		}
+		else if (from == DOUBLE_BACK_5) {
+			if (round > 5) {
+				char Last6Move[1][3];
+				Last6Move[0][0] = hv->Path[5 * round - 26][1];
+				Last6Move[0][1] = hv->Path[5 * round - 26][2];
+				Last6Move[0][2] = '\0';
+				from = placeAbbrevToId(Last6Move[0]);
+			}
+		}
 		int counter = 0;
-		ConnList curr = MapGetConnections(hv->map, *from);
+		ConnList curr = MapGetConnections(hv->map, from);
 		while (curr != NULL) {
 			counter++;
 			curr = curr->next;
 		}
 		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
-		result[0] = *from;
+		result[0] = from;
 		result[1] = 999;
 		char Past5Move[5][3];
 		if (round < 5) {
@@ -669,7 +762,7 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 		} else {
 			round_temp = 5;
 		}
-		curr = MapGetConnections(hv->map, *from);
+		curr = MapGetConnections(hv->map, from);
 		while (curr != NULL) {
 			if (curr->type == RAIL
 			|| repeated_city[curr->p] == 1
@@ -698,27 +791,27 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 				repeated_city[curr->p] = 1;
 			}
 			curr = curr->next;
-	}
+		}
 		*numReturnedLocs = GetLenOfList(result);
 		return result;
 	} else {
-		*from = HvGetPlayerLocation(hv,player);
+		from = HvGetPlayerLocation(hv,player);
 		int counter = 0;
-		ConnList curr = MapGetConnections(hv->map, *from);
+		ConnList curr = MapGetConnections(hv->map, from);
 		while (curr != NULL) {
 			counter++;
 			curr = curr->next;
 		}
 		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
-		result[0] = *from;
+		result[0] = from;
 		result[1] = 999;
 		int index = 1;
 		int max_distance = (round + player) % 4;
 		PlaceId *RailList = NULL;
 		if (rail == true) {
-			RailList = GetConnRail(hv->map, *from, max_distance, repeated_city);
+			RailList = GetConnRail(hv->map, from, max_distance, repeated_city);
 		}
-		curr = MapGetConnections(hv->map, *from);
+		curr = MapGetConnections(hv->map, from);
 		while (curr != NULL) {
 			if (repeated_city[curr->p] == 1) {
 				curr=curr->next;
@@ -730,12 +823,12 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 				repeated_city[curr->p] = 1;
 			}
 			else if (curr->type == BOAT && boat == true) {
-				if (placeIsSea(*from)) {
+				if (placeIsSea(from)) {
 					result[index++] = curr->p;
 					result[index] = 999;
 					repeated_city[curr->p] = 1;
 				}
-				else if (placeIsLand(*from) && placeIsSea(curr->p)) {
+				else if (placeIsLand(from) && placeIsSea(curr->p)) {
 					result[index++] = curr->p;
 					result[index] = 999;
 					repeated_city[curr->p] = 1;
@@ -747,7 +840,6 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 			result = MergeList(result, RailList);
 		}
 		*numReturnedLocs = GetLenOfList(result);
-
 		return result;
 	}
 	return NULL;
@@ -831,9 +923,9 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 	assert (hv != NULL);
 	int maxLen = MapNumPlaces(hv->map); 
 	PlaceId *visited = calloc(maxLen,sizeof(PlaceId));
-	QueueYue q = newQueueYue();
+	Queue q = newQueue();
 	PlaceId src = placeList->start;
-	QueueYueJoin(q, src);
+	QueueJoin(q, src);
 	int isFound = 0;
 	int *new_path = calloc(maxLen,sizeof(PlaceId));
 
@@ -844,8 +936,8 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 		new_path[i] = -1;
 	}
 	levelRecord[src] = placeList->round;
-	while (!QueueYueIsEmpty(q) && !isFound) {
-		PlaceId y,x = QueueYueLeave(q);
+	while (!QueueIsEmpty(q) && !isFound) {
+		PlaceId y,x = QueueLeave(q);
 		if (visited[x]) {
 			continue;
 		}
@@ -857,7 +949,7 @@ static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 			new_path[y] = x;
 			if (y == dest) { isFound = 1;break; }
 			if (!visited[y]) { 
-				QueueYueJoin(q,y);
+				QueueJoin(q,y);
 			}
 		}
 	}
@@ -930,6 +1022,11 @@ static int checkPlaceRe(PlaceId *list, int len, PlaceId target) {
 		}
 	}
 	return 1;
+}
+
+// free placeList
+static void freePlaceLis(HunterReach placeList){
+	free(placeList);
 }
 
 // TODO

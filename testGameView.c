@@ -1015,6 +1015,7 @@ int main(void)
 			GvFree(gv);			
 
 		}
+		printf("Test passed!\n");
 	
 	}
 
