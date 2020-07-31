@@ -315,6 +315,7 @@ int main(void)
 			DvFree(dv);			
 
 		}
+		printf("Test passed!\n");
 
 	}
 

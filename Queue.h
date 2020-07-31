@@ -1,5 +1,6 @@
 // Queue.h ... interface to Queue ADT
 // Written by John Shepherd, March 2013
+#include "Places.h"
 
 #ifndef QUEUE_H
 #define QUEUE_H
@@ -8,8 +9,7 @@
 #define ItemEQ(i1, i2) ((i1) == (i2))
 #define ItemShow(i) printf ("%d", (i))
 
-typedef int Vertex;
-typedef Vertex Item;
+typedef PlaceId Item;
 typedef struct QueueRep *Queue;
 
 Queue newQueue (void);			// create new empty queue
