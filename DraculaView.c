@@ -379,7 +379,6 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 			curr = MapGetConnections(dv->map, placeAbbrevToId(Last6Move[0]));
 		}
 	}
-
 	int index = 0;
 	int round_temp;
 	if (round < 5) {
@@ -448,8 +447,7 @@ PlaceId *DvGetValidMoves(DraculaView dv, int *numReturnedMoves)
 		return NULL;
 	}
 	*numReturnedMoves = GetLenOfList(result);
-	return result;
-	
+	return result;	
 }
 
 PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
@@ -523,7 +521,7 @@ PlaceId *DvWhereCanIGo(DraculaView dv, int *numReturnedLocs)
 	PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 	// Get past 5 moves of dracula
 	char Past5Move[5][3];
-	if (round < 6) {
+	if (round < 5) {
 		for (int i = 0, j = 4; i < round; i++, j+=5) {
 			Past5Move[i][0] = dv->Path[j][1];
 			Past5Move[i][1] = dv->Path[j][2];
@@ -666,24 +664,19 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 			Past5Move[i][2] = '\0';
 		}
 	}
-
 	curr = MapGetConnections(dv->map, from);
 	int index = 0;
 	int round_temp;
-	if (round < 6) {
+	if (round < 5) {
 		round_temp = round;
 	} else {
 		round_temp = 5;
 	}
 	// Check if current adjacent city satisfy condition
 	while(curr != NULL) {
-		// Dracula can not move to hospital
-		if (curr->p == ST_JOSEPH_AND_ST_MARY) {
-			curr = curr->next;
-			continue;
-		}
-		// Dracula can not travel through rail
-		if (curr->type == RAIL) {
+		if (curr->type == RAIL
+		|| repeated_city[curr->p] == 1 
+		|| curr->p == ST_JOSEPH_AND_ST_MARY) {
 			curr = curr->next;
 			continue;
 		}
@@ -700,12 +693,12 @@ PlaceId *DvWhereCanIGoByType(DraculaView dv, bool road, bool boat,
 			continue;
 		}
 		// If current place satisfy conditon
-		if (curr->type == ROAD  && road == true && repeated_city[curr->p] == 0) {
+		if (curr->type == ROAD  && road == true) {
 			result[index++] = curr->p;
 			result[index] = 999;
 			repeated_city[curr->p] = 1;
 
-		} else if (curr->type == BOAT && boat == true && repeated_city[curr->p] == 0) {
+		} else if (curr->type == BOAT && boat == true) {
 			result[index++] = curr->p;
 			result[index] = 999;
 			repeated_city[curr->p] = 1;
@@ -798,7 +791,7 @@ PlaceId *DvWhereCanTheyGo(DraculaView dv, Player player,
 		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 1));
 		// Get past 5 moves of dracula
 		char Past5Move[5][3];
-		if (round < 6) {
+		if (round < 5) {
 			for (int i = 0, j = 4; i < round; i++, j+=5) {
 				Past5Move[i][0] = dv->Path[j][1];
 				Past5Move[i][1] = dv->Path[j][2];
@@ -972,7 +965,7 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 			}
 		}
 		else if (from == DOUBLE_BACK_4) {
-			if (round > 5) {
+			if (round > 4) {
 				char Last5Move[1][3];
 				Last5Move[0][0] = dv->Path[5 * round - 21][1];
 				Last5Move[0][1] = dv->Path[5 * round - 21][2];
@@ -981,7 +974,7 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 			}
 		}
 		else if (from == DOUBLE_BACK_5) {
-			if (round > 6) {
+			if (round > 5) {
 				char Last6Move[1][3];
 				Last6Move[0][0] = dv->Path[5 * round - 26][1];
 				Last6Move[0][1] = dv->Path[5 * round - 26][2];
@@ -1010,7 +1003,6 @@ PlaceId *DvWhereCanTheyGoByType(DraculaView dv, Player player,
 				Past5Move[i][2] = '\0';
 			}
 		}
-
 		curr = MapGetConnections(dv->map, from);
 		int index = 0;
 		int round_temp;

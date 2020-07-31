@@ -34,7 +34,7 @@ int main (void)
 	PlaceId *moves = DvGetValidMoves(dv, &numMoves);
     printf("%d\n", numMoves);
     for (int i = 0; i < numMoves; i++) {
-        printf("%s\n",placeIdToName(moves[i]));
+        printf("%s(%d) ",placeIdToName(moves[i]), i + 1);
     }
 	assert(numMoves == 4);
 	sortPlaces(moves, numMoves);
