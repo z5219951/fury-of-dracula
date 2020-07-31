@@ -843,6 +843,8 @@ int main(void)
 		assert(locs[3] == GALATZ);
 		assert(locs[4] == KLAUSENBURG);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 	
 	{///////////////////////////////////////////////////////////////////
@@ -865,6 +867,8 @@ int main(void)
 		assert(locs[3] == MARSEILLES);
 		assert(locs[4] == PARIS);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 	
 	{///////////////////////////////////////////////////////////////////
@@ -886,6 +890,8 @@ int main(void)
 		assert(locs[2] == IONIAN_SEA);
 		assert(locs[3] == VENICE);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	} 
 	
 	{///////////////////////////////////////////////////////////////////
@@ -909,7 +915,9 @@ int main(void)
 		assert(locs[2] == KLAUSENBURG);
 		assert(locs[3] == SZEGED);
 		assert(locs[4] == ZAGREB);
-		printf("Test passed!\n");	
+		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -932,6 +940,8 @@ int main(void)
 		assert(locs[3] == SZEGED);
 		assert(locs[4] == ZAGREB);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -956,6 +966,8 @@ int main(void)
 		assert(locs[4] == KLAUSENBURG);
 		assert(locs[5] == SOFIA);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -979,6 +991,8 @@ int main(void)
 		assert(locs[2] == GALATZ);
 		assert(locs[3] == VARNA);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -1002,6 +1016,8 @@ int main(void)
 		assert(locs[1] == IONIAN_SEA);
 		assert(locs[2] == VARNA);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -1026,6 +1042,8 @@ int main(void)
 		assert(locs[1] == IONIAN_SEA);
 		assert(locs[2] == VARNA);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -1052,6 +1070,8 @@ int main(void)
 		assert(locs[3] == KLAUSENBURG);
 		assert(locs[4] == SOFIA);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -1073,6 +1093,8 @@ int main(void)
 		sortPlaces(locs, numLocs);
 		assert(locs[0] == PRAGUE);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -1097,6 +1119,8 @@ int main(void)
 		assert(locs[2] == PRAGUE);
 		assert(locs[3] == VIENNA);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 
 	{///////////////////////////////////////////////////////////////////
@@ -1115,6 +1139,8 @@ int main(void)
 		sortPlaces(locs, numLocs);
 		assert(locs[0] == SZEGED);
 		printf("Test passed!\n");
+		free(locs);
+		HvFree(hv);
 	}
 	return EXIT_SUCCESS;
 	
