@@ -147,6 +147,7 @@ void decideHunterMove(HunterView hv)
 		char resultMoveTran[3];
 		strcpy(resultMoveTran, resultMove);
 		registerBestPlay(resultMoveTran, "searching Dracula");
+		return;
 	} 
 
 	// default place 
