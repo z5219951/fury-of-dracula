@@ -64,9 +64,10 @@ void decideHunterMove(HunterView hv)
 		const char *result = placeIdToAbbrev(currPlace);
 		char resultTran[3];
 		strcpy(resultTran, result);
-		registerBestPlay(resultTran, "searching");
+		registerBestPlay(resultTran, "searching vampire");
 		return;
 	}
+ 
 
 	// choose one to destory the vampire except PLAYER_LORD_GODALMING
 	Player destroyVam = PLAYER_DR_SEWARD;
@@ -118,8 +119,9 @@ void decideHunterMove(HunterView hv)
 
 	// check Dracula loaction
 	// move to Dracula if it is revealed
+	// the round should be no more than 7 round before
 	int pathDraNum = -1;
-	if(lastKnow != -1) {
+	if(lastKnow != -1 && (currRound-lastKnow) < 7) {
 		PlaceId *pathDra = HvGetShortestPathTo(hv,currPlayer, lastPlace, &pathDraNum);
 		const char *resultDra = placeIdToAbbrev(pathDra[0]);
 		char resultDraTran[3];
@@ -137,10 +139,27 @@ void decideHunterMove(HunterView hv)
 		return;
 	}
 
+	// if dracula use double back, it probably nears one of the hunter
+	Round lastMoveRound = -1;
+	PlaceId lastMove = HvGetLastKnownDraculaMove(hv, &lastMoveRound);
+	if ((lastMove >= DOUBLE_BACK_1) && (lastMove <= DOUBLE_BACK_5)) {
+		const char *resultMove = placeIdToAbbrev(currPlace);
+		char resultMoveTran[3];
+		strcpy(resultMoveTran, resultMove);
+		registerBestPlay(resultMoveTran, "searching Dracula");
+	} 
+
 	// default place 
 	int defaultNum = -1;
 	PlaceId *defaultPlace = HvWhereCanIGo(hv, &defaultNum);
-	const char *resultdefault = placeIdToAbbrev(defaultPlace[0]);
+	PlaceId final;
+	for (int i = 0; i < defaultNum; i++) {
+		if (defaultPlace[i] != currPlace) {
+			final = defaultPlace[i];
+			break;
+		}
+	}
+	const char *resultdefault = placeIdToAbbrev(final);
 	char resultDefTran[3];
 	strcpy(resultDefTran, resultdefault);
 	registerBestPlay(resultDefTran, "default move");
