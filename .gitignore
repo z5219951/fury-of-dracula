@@ -63,3 +63,7 @@ testMap
 
 # Sally's personal files
 sallytest*
+
+# ignore Ai part file
+dracula
+hunter
