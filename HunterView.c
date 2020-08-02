@@ -28,7 +28,6 @@ struct hunterView {
 	// TODO: ADD FIELDS HERE
 	char **Path;
 	int num;
-	Map map;
 };
 
 // store the hunter reachable places
@@ -103,7 +102,6 @@ HunterView HvNew(char *pastPlays, Message messages[])
         word = strtok(NULL,delim);
     }
 	new->num = index;
-	new->map = MapNew();
 	return new;
 }
 
@@ -111,7 +109,6 @@ void HvFree(HunterView hv)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
 	free(hv->Path);
-	MapFree(hv->map);
 	free(hv);
 }
 
@@ -306,7 +303,7 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 		return lastPlace;
 	}
 	PlaceId startId = lastPlace[0];
-	int maxLen = MapNumPlaces(hv->map);
+	int maxLen = MapNumPlaces(MapNew());
 	HunterReach placeList = malloc(sizeof(HunterReach));
 
 	// set default value in placeList
@@ -355,7 +352,7 @@ PlaceId *HvWhereCanIGo(HunterView hv, int *numReturnedLocs)
 	}
 
 	PlaceId startId = lastPlace[0];
-	int maxLen = MapNumPlaces(hv->map);
+	int maxLen = MapNumPlaces(MapNew());
 	HunterReach placeList = malloc(sizeof(HunterReach));
 	int lenNum = 0;
 
@@ -437,7 +434,7 @@ PlaceId *HvWhereCanIGoByType(HunterView hv, bool road, bool rail,
 	}
 
 	PlaceId startId = lastPlace[0];
-	int maxLen = MapNumPlaces(hv->map);
+	int maxLen = MapNumPlaces(MapNew());
 	HunterReach placeList = malloc(sizeof(HunterReach));
 	int lenNum = 0;
 
@@ -504,345 +501,52 @@ PlaceId *HvWhereCanTheyGo(HunterView hv, Player player,
                           int *numReturnedLocs)
 {
 	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	Player currPlayer = (hv->num) % 5;
-	int round = (hv->num) / 5;
-	if (currPlayer > player) {
-		round++;
+	// check whether the Player has moved
+	// transform hv to gv
+	GameView trans = hunterToGame(hv);
+	// get result from GvGetLastLocations
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *lastPlace = GvGetLastLocations(trans, player,1, &numReturn, &canFree);
+	// if current player hasn't moved yet
+	if (numReturn == 0 || lastPlace[0] == CITY_UNKNOWN) {
+		*numReturnedLocs = 0;
+		return NULL;
 	}
-	int n = MapNumPlaces(hv->map);
-	int *repeated_city = calloc(n, sizeof(int));
-	PlaceId from;
-	if (player == PLAYER_DRACULA) {
-		from = HvGetLastKnownDraculaLocation(hv, &round);
-		if (from == NOWHERE) {
-			*numReturnedLocs = 0;
-			return NULL;
-		}
-		if (from == HIDE || from == DOUBLE_BACK_1) {
-			if (round > 1) {
-				char Last2Move[1][3];
-				Last2Move[0][0] = hv->Path[5 * round - 6][1];
-				Last2Move[0][1] = hv->Path[5 * round - 6][2];
-				Last2Move[0][2] = '\0';
-				from = placeAbbrevToId(Last2Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_2) {
-			if (round > 2) {
-				char Last3Move[1][3];
-				Last3Move[0][0] = hv->Path[5 * round - 11][1];
-				Last3Move[0][1] = hv->Path[5 * round - 11][2];
-				Last3Move[0][2] = '\0';
-				from = placeAbbrevToId(Last3Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_3) {
-			if (round > 3) {
-				char Last4Move[1][3];
-				Last4Move[0][0] = hv->Path[5 * round - 16][1];
-				Last4Move[0][1] = hv->Path[5 * round - 16][2];
-				Last4Move[0][2] = '\0';
-				from = placeAbbrevToId(Last4Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_4) {
-			if (round > 4) {
-				char Last5Move[1][3];
-				Last5Move[0][0] = hv->Path[5 * round - 21][1];
-				Last5Move[0][1] = hv->Path[5 * round - 21][2];
-				Last5Move[0][2] = '\0';
-				from = placeAbbrevToId(Last5Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_5) {
-			if (round > 5) {
-				char Last6Move[1][3];
-				Last6Move[0][0] = hv->Path[5 * round - 26][1];
-				Last6Move[0][1] = hv->Path[5 * round - 26][2];
-				Last6Move[0][2] = '\0';
-				from = placeAbbrevToId(Last6Move[0]);
-			}
-		}
-		int counter = 0;
-		ConnList curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			counter++;
-			curr = curr->next;
-		}
-		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
-		result[0] = from;
-		result[1] = 999;
-		char Past5Move[5][3];
-		if (round < 5) {
-			for (int i = 0, j = 4; i < round; i++, j+=5) {
-				Past5Move[i][0] = hv->Path[j][1];
-				Past5Move[i][1] = hv->Path[j][2];
-				Past5Move[i][2] = '\0';
-			}
-		} else {
-			for (int i = 0, j = round - 5; i < 5; i++, j++) {
-				Past5Move[i][0] = hv->Path[4 + j * 5][1];
-				Past5Move[i][1] = hv->Path[4 + j * 5][2];
-				Past5Move[i][2] = '\0';
-			}
-		}
-		int index = 1;
-		int round_temp;
-		if (round < 5) {
-			round_temp = round;
-		} else {
-			round_temp = 5;
-		}
-		curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			if (curr->type == RAIL
-			|| repeated_city[curr->p] == 1
-			|| curr->p ==ST_JOSEPH_AND_ST_MARY) {
-				curr = curr->next;
-				continue;
-			}
-			bool hasRepeatedMove = false;
-			for (int i = 0; i < round_temp; i++) {
-				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
-					hasRepeatedMove = true;
-				}
-			}
-			if (hasRepeatedMove) {
-				curr = curr->next;
-				continue;
-			}
-			if (curr->type == ROAD || curr->type == BOAT) {
-				result[index++] = curr->p;
-				result[index] =	999;
-				repeated_city[curr->p] = 1;
-			}
-			curr = curr->next;
+	int currentPlay = (hv->num)%5;
+	int round = (hv->num)/5;
+	if (currentPlay > player) {
+		round+=1;
 	}
-		*numReturnedLocs = GetLenOfList(result);
-		return result;
-	} else {
-		from = HvGetPlayerLocation(hv,player);
-		int counter = 0;
-		ConnList curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			counter++;
-			curr = curr->next;
-		}
-		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
-		result[0] = from;
-		result[1] = 999;
-		int index = 1;
-		int max_distance = (round + player) % 4;
-		PlaceId *RailList = GetConnRail(hv->map, from, max_distance, repeated_city);
-		curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			if (repeated_city[curr->p] == 1) {
-				curr=curr->next;
-				continue;
-			}
-			if (curr->type == ROAD) {
-				result[index++] = curr->p;
-				result[index] = 999;
-				repeated_city[curr->p] = 1;
-			}
-			else if (curr->type == BOAT) {
-				if (placeIsSea(from)) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					repeated_city[curr->p] = 1;
-				}
-				else if (placeIsLand(from) && placeIsSea(curr->p)) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					repeated_city[curr->p] = 1;
-				}
-			}
-			curr = curr->next;
-		}
-		if (RailList != NULL) {
-			result = MergeList(result, RailList);
-		}
-		*numReturnedLocs = GetLenOfList(result);
-		return result;
-	}
-	return NULL;
+	int testReturn;
+	PlaceId *result = GvGetReachable(trans,player, round,lastPlace[0], &testReturn);
+	*numReturnedLocs = testReturn;
+	return result;
 }
 
 PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
                                 bool road, bool rail, bool boat,
                                 int *numReturnedLocs)
 {
-	// TODO: REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-	Player currPlayer = (hv->num) % 5;
-	int round = (hv->num) / 5;
-	if (currPlayer > player) {
-		round++;
+	GameView trans = hunterToGame(hv);
+	// get result from GvGetLastLocations
+	int numReturn = 0;
+	bool canFree = false;
+	PlaceId *lastPlace = GvGetLastLocations(trans, player,1, &numReturn, &canFree);
+	// if current player hasn't moved yet
+	if (numReturn == 0 || lastPlace[0] == CITY_UNKNOWN) {
+		*numReturnedLocs = 0;
+		return NULL;
 	}
-	int n = MapNumPlaces(hv->map);
-	int *repeated_city = calloc(n, sizeof(int));
-    PlaceId from;
-	if (player == PLAYER_DRACULA) {
-		from = HvGetLastKnownDraculaLocation(hv, &round);
-		if (from == NOWHERE) {
-			*numReturnedLocs = 0;
-			return NULL;
-		}
-		if (from == HIDE || from == DOUBLE_BACK_1) {
-			if (round > 1) {
-				char Last2Move[1][3];
-				Last2Move[0][0] = hv->Path[5 * round - 6][1];
-				Last2Move[0][1] = hv->Path[5 * round - 6][2];
-				Last2Move[0][2] = '\0';
-				from = placeAbbrevToId(Last2Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_2) {
-			if (round > 2) {
-				char Last3Move[1][3];
-				Last3Move[0][0] = hv->Path[5 * round - 11][1];
-				Last3Move[0][1] = hv->Path[5 * round - 11][2];
-				Last3Move[0][2] = '\0';
-				from = placeAbbrevToId(Last3Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_3) {
-			if (round > 3) {
-				char Last4Move[1][3];
-				Last4Move[0][0] = hv->Path[5 * round - 16][1];
-				Last4Move[0][1] = hv->Path[5 * round - 16][2];
-				Last4Move[0][2] = '\0';
-				from = placeAbbrevToId(Last4Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_4) {
-			if (round > 4) {
-				char Last5Move[1][3];
-				Last5Move[0][0] = hv->Path[5 * round - 21][1];
-				Last5Move[0][1] = hv->Path[5 * round - 21][2];
-				Last5Move[0][2] = '\0';
-				from = placeAbbrevToId(Last5Move[0]);
-			}
-		}
-		else if (from == DOUBLE_BACK_5) {
-			if (round > 5) {
-				char Last6Move[1][3];
-				Last6Move[0][0] = hv->Path[5 * round - 26][1];
-				Last6Move[0][1] = hv->Path[5 * round - 26][2];
-				Last6Move[0][2] = '\0';
-				from = placeAbbrevToId(Last6Move[0]);
-			}
-		}
-		int counter = 0;
-		ConnList curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			counter++;
-			curr = curr->next;
-		}
-		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
-		result[0] = from;
-		result[1] = 999;
-		char Past5Move[5][3];
-		if (round < 5) {
-			for (int i = 0, j = 4; i < round; i++, j+=5) {
-				Past5Move[i][0] = hv->Path[j][1];
-				Past5Move[i][1] = hv->Path[j][2];
-				Past5Move[i][2] = '\0';
-			}
-		} else {
-			for (int i = 0, j = round - 5; i < 5; i++, j++) {
-				Past5Move[i][0] = hv->Path[4 + j * 5][1];
-				Past5Move[i][1] = hv->Path[4 + j * 5][2];
-				Past5Move[i][2] = '\0';
-			}
-		}
-		int index = 1;
-		int round_temp;
-		if (round < 5) {
-			round_temp = round;
-		} else {
-			round_temp = 5;
-		}
-		curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			if (curr->type == RAIL
-			|| repeated_city[curr->p] == 1
-			|| curr->p == ST_JOSEPH_AND_ST_MARY) {
-				curr = curr->next;
-				continue;
-			}
-			bool hasRepeatedMove = false;
-			for (int i = 0; i < round_temp; i++) {
-				if (strcmp(Past5Move[i], placeIdToAbbrev(curr->p)) == 0) {
-					hasRepeatedMove = true;
-				}
-			}
-			if (hasRepeatedMove) {
-				curr = curr->next;
-				continue;
-			}
-			if (curr->type == ROAD && road == true) {
-				result[index++] = curr->p;
-				result[index] =	999;
-				repeated_city[curr->p] = 1;
-			}
-			else if (curr->type == BOAT && boat == true)  {
-				result[index++] = curr->p;
-				result[index] = 999;
-				repeated_city[curr->p] = 1;
-			}
-			curr = curr->next;
-		}
-		*numReturnedLocs = GetLenOfList(result);
-		return result;
-	} else {
-		from = HvGetPlayerLocation(hv,player);
-		int counter = 0;
-		ConnList curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			counter++;
-			curr = curr->next;
-		}
-		PlaceId *result = malloc(sizeof(PlaceId) * (counter + 2));
-		result[0] = from;
-		result[1] = 999;
-		int index = 1;
-		int max_distance = (round + player) % 4;
-		PlaceId *RailList = NULL;
-		if (rail == true) {
-			RailList = GetConnRail(hv->map, from, max_distance, repeated_city);
-		}
-		curr = MapGetConnections(hv->map, from);
-		while (curr != NULL) {
-			if (repeated_city[curr->p] == 1) {
-				curr=curr->next;
-				continue;
-			}
-			if (curr->type == ROAD && road == true) {
-				result[index++] = curr->p;
-				result[index] = 999;
-				repeated_city[curr->p] = 1;
-			}
-			else if (curr->type == BOAT && boat == true) {
-				if (placeIsSea(from)) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					repeated_city[curr->p] = 1;
-				}
-				else if (placeIsLand(from) && placeIsSea(curr->p)) {
-					result[index++] = curr->p;
-					result[index] = 999;
-					repeated_city[curr->p] = 1;
-				}
-			}
-			curr = curr->next;
-		}
-		if (rail == true && RailList != NULL) {
-			result = MergeList(result, RailList);
-		}
-		*numReturnedLocs = GetLenOfList(result);
-		return result;
+	int currentPlay = (hv->num)%5;
+	int round = (hv->num)/5;
+	if (currentPlay > player) {
+		round+=1;
 	}
-	return NULL;
+	int testReturn;
+	PlaceId *result = GvGetReachableByType(trans,player, round,lastPlace[0],road,rail, boat,&testReturn);
+	*numReturnedLocs = testReturn;
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -853,6 +557,9 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 static GameView hunterToGame(HunterView hv) {
 	Message messages[] = {};
 	char *originPast = malloc(8*hv->num);
+	if (hv->num == 1) {
+		return GvNew(hv->Path[0], messages);
+	}
 	for (int i = 0; i < hv->num; i++) {
 		strcat(originPast, hv->Path[i]);
 		if (i != hv->num-1) {
@@ -864,7 +571,7 @@ static GameView hunterToGame(HunterView hv) {
 
 // get hunter reachable palces from road or sead
 static void reachPlacesRoad(HunterView hv, HunterReach placeList, PlaceId p, int *levelRecord) {
-	ConnList current = MapGetConnections(hv->map, p);
+	ConnList current = MapGetConnections(MapNew(), p);
 	PlaceId originStart = p;
 	for (ConnList i = current; i != NULL; i = i->next) {
 		// only accept no rail type
@@ -896,7 +603,7 @@ static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int
 	if (placeList->railNum == 0) {
 		return;
 	}
-	ConnList current = MapGetConnections(hv->map, p);
+	ConnList current = MapGetConnections(MapNew(), p);
 	int originRail = placeList->railNum;
 	// all location come from the same start place
 	PlaceId originStart = placeList->start;
@@ -921,7 +628,7 @@ static void reachPlacesRail(HunterView hv, HunterReach placeList, PlaceId p, int
 // get shortest path in BFS
 static void findshort(HunterView hv, HunterReach placeList, PlaceId dest){
 	assert (hv != NULL);
-	int maxLen = MapNumPlaces(hv->map); 
+	int maxLen = MapNumPlaces(MapNew()); 
 	PlaceId *visited = calloc(maxLen,sizeof(PlaceId));
 	Queue q = newQueue();
 	PlaceId src = placeList->start;
@@ -1060,9 +767,6 @@ int HvGetRoundHealth(HunterView hv, Player player, int health, int round) {
 		// Double back move check
 		if (DnumCheck(placeAbbrevToId(place1))) {
 			int backmove = placeAbbrevToId(place1) - DOUBLE_BACK_1 + 1;
-			/*PlaceId *move =
-			hvGetLastLocations(hv, player, backmove, false);
-			place1 = placeIdToAbbrev(move[backmove])*/
 			backmove *= NUM_PLAYERS;
 			backmove = round - backmove;
 			place1[0] = hv->Path[backmove][1];

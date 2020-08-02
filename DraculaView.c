@@ -1155,9 +1155,6 @@ int dvGetRoundHealth(DraculaView dv, Player player, int health, int round) {
 		// Double back move check
 		if (DnumCheck(placeAbbrevToId(place1))) {
 			int backmove = placeAbbrevToId(place1) - DOUBLE_BACK_1 + 1;
-			/*PlaceId *move =
-			dvGetLastLocations(dv, player, backmove, false);
-			place1 = placeIdToAbbrev(move[backmove])*/
 			backmove *= NUM_PLAYERS;
 			backmove = round - backmove;
 			place1[0] = dv->Path[backmove][1];
