@@ -310,7 +310,7 @@ PlaceId *HvGetShortestPathTo(HunterView hv, Player hunter, PlaceId dest,
 	placeList->places = calloc(maxLen, sizeof(PlaceId));
 	int round = (hv->num)/5;
 	placeList->round = round;
-	placeList->player = hunter;
+	placeList->player = PLAYER_DRACULA;
 	placeList->railNum = (hunter + round)%4;
 	placeList->totalNum = 0;
 	placeList->start = startId;
