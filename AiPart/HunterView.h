@@ -214,7 +214,8 @@ PlaceId *HvWhereCanTheyGoByType(HunterView hv, Player player,
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
-
+// check the last move for Dracula
+PlaceId HvGetLastKnownDraculaMove(HunterView hv, Round *round);
 // TODO
 
 #endif // !defined (FOD__HUNTER_VIEW_H_)

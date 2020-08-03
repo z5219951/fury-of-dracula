@@ -234,5 +234,22 @@ static Round playerNextRound(HunterView hv, Player player) {
 
 ////////////////////////////////////////////////////////////////////////
 // Your own interface functions
-
+// check the last move for Dracula
+PlaceId HvGetLastKnownDraculaMove(HunterView hv, Round *round)
+{
+	int numLocs = 0;
+	bool canFree = false;
+	PlaceId *locs = GvGetMoveHistory(hv->gv, PLAYER_DRACULA,
+	                                     &numLocs, &canFree);
+	PlaceId location = NOWHERE;
+	if (numLocs > 0) {
+		location = locs[numLocs - 1];
+		*round = numLocs - 1;
+	} else {
+		*round = 0;
+	}
+	
+	if (canFree) free(locs);
+	return location;
+}
 // TODO

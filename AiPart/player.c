@@ -71,7 +71,7 @@ typedef HunterView View;
 # define decideMove decideHunterMove
 # define ViewFree HvFree
 
-# define xPastPlays "GZA.... SED.... HZU...."
+# define xPastPlays "GCD.... SCD.... HCD.... MCD.... DC?.V.. GCD.... SGE.... HCD.... MCD.... DC?.... GCD.... SCD.... HCD.... MCD.... DHI.... GCD...."
 # define xMsgs { "", "", "" }
 
 #endif
@@ -91,7 +91,7 @@ int main(void)
 
 // Saves characters from play (and appends a terminator)
 // and saves characters from message (and appends a terminator)
-void registerBestPlay(const char *play, Message message)
+void registerBestPlay(char *play, Message message)
 {
 	strncpy(latestPlay, play, MOVE_SIZE - 1);
 	latestPlay[MOVE_SIZE - 1] = '\0';
