@@ -16,6 +16,7 @@
 #include "Map.h"
 #include "Queue.h"
 #include <assert.h>
+#include <string.h>
 
 // stores the shortest path
 typedef struct shortestPath {
@@ -60,7 +61,7 @@ void decideDraculaMove(DraculaView dv)
 	// Dracula's next move
 	PlaceId move;
 	// If round 0,
-	// loop through all valid locations 
+	// loop through all valid locations
 	// excluding sea locations and hopsital
 	int distFromMunich1 = -1;
 	if (round == 0) {
@@ -78,7 +79,7 @@ void decideDraculaMove(DraculaView dv)
 				move = i;
 			}
 			else if (pathLength == furthestDist) {
-				// check loc's distance from Munich 
+				// check loc's distance from Munich
 				int distFromMunich2 = -1;
 				GetShortestPathLength(dv, i, MUNICH, &distFromMunich2);
 				if (distFromMunich2 < distFromMunich1) {
@@ -92,7 +93,7 @@ void decideDraculaMove(DraculaView dv)
 				move = i;
 			}
 			else if (pathLength == furthestDist) {
-				// check loc's distance from Munich 
+				// check loc's distance from Munich
 				int distFromMunich2 = -1;
 				GetShortestPathLength(dv, i, MUNICH, &distFromMunich2);
 				if (distFromMunich2 < distFromMunich1) {
@@ -106,7 +107,7 @@ void decideDraculaMove(DraculaView dv)
 				move = i;
 			}
 			else if (pathLength == furthestDist) {
-				// check loc's distance from Munich 
+				// check loc's distance from Munich
 				int distFromMunich2 = -1;
 				GetShortestPathLength(dv, i, MUNICH, &distFromMunich2);
 				if (distFromMunich2 < distFromMunich1) {
@@ -120,7 +121,7 @@ void decideDraculaMove(DraculaView dv)
 				move = i;
 			}
 			else if (pathLength == furthestDist) {
-				// check loc's distance from Munich 
+				// check loc's distance from Munich
 				int distFromMunich2 = -1;
 				GetShortestPathLength(dv, i, MUNICH, &distFromMunich2);
 				if (distFromMunich2 < distFromMunich1) {
@@ -128,14 +129,15 @@ void decideDraculaMove(DraculaView dv)
 					move = i;
 				}
 			}
-		} 
+		}
 	}
 	// if not round 0
 	int numReturnedLocs = 0;
 	PlaceId *reachableLocs = DvWhereCanIGo(dv, &numReturnedLocs);
 
-
-	registerBestPlay(placeIdToAbbrev(move), "Mwahahahaha");
+	char move_name[3];
+	strcpy(move_name, placeIdToAbbrev(move));
+	registerBestPlay(move_name, "Mwahahahaha");
 }
 
 void GetShortestPathLength(DraculaView dv, PlaceId src, PlaceId dest,
@@ -171,7 +173,7 @@ void GetShortestPathLength(DraculaView dv, PlaceId src, PlaceId dest,
 // get shortest path in BFS
 static void findshort(DraculaView dv, ShortestPath placeList, PlaceId dest) {
 	assert (dv != NULL);
-	int maxLen = MapNumPlaces(MapNew()); 
+	int maxLen = MapNumPlaces(MapNew());
 	PlaceId *visited = calloc(maxLen,sizeof(PlaceId));
 	Queue q = QueueNew();
 	PlaceId src = placeList->start;
@@ -198,7 +200,7 @@ static void findshort(DraculaView dv, ShortestPath placeList, PlaceId dest) {
 			}
 			new_path[y] = x;
 			if (y == dest) { isFound = 1;break; }
-			if (!visited[y]) { 
+			if (!visited[y]) {
 				QueueEnqueue(q,y);
 			}
 		}
@@ -278,7 +280,7 @@ static void reachPlacesRoad(DraculaView dv, ShortestPath placeList, PlaceId p, i
 				if (!MYBOAT) {
 					continue;
 				}
-				
+
 			}
 			if (placeList->places[i->p] == -1) {
 				if (levelRecord[i->p] == -1) {
@@ -308,7 +310,7 @@ static void reachPlacesRail(DraculaView dv, ShortestPath placeList, PlaceId p, i
 				}
 				placeList->places[i->p] = originStart;
 				placeList->totalNum+=1;
-				
+
 				// move to next station
 				placeList->railNum = placeList->railNum - 1;
 				reachPlacesRail(dv, placeList, i->p, levelRecord);
