@@ -64,39 +64,31 @@ void decideHunterMove(HunterView hv)
 
 	// stay in the same place to do research for round 1 or vampireNow is unknow
 	if (currRound == 1 || (vampireNow == CITY_UNKNOWN && currRound%13 == 6)) {
-		const char *result = placeIdToAbbrev(currPlace);
-		char resultTran[3];
-		strcpy(resultTran, result);
-		registerBestPlay(resultTran, "searching vampire");
+		char *result = placeIdToAbbrev(currPlace);
+		registerBestPlay(result, "searching vampire");
 		return;
 	}
 	
 	// PLAYER_LORD_GODALMING should always stay in DC
 	if (currPlayer == PLAYER_LORD_GODALMING) {
 		// make sure he is in DC
-		const char *backDc;
+		char *backDc;
 		if (currPlace != CASTLE_DRACULA) {
 			int numBackDc = -1;
 			PlaceId *pathDc = HvGetShortestPathTo(hv,PLAYER_LORD_GODALMING, CASTLE_DRACULA, &numBackDc);
 			backDc = placeIdToAbbrev(pathDc[0]);
-			char backDcTran[3];
-			strcpy(backDcTran, backDc);
-			registerBestPlay(backDcTran, "Go back castle");
+			registerBestPlay(backDc, "Go back castle");
 			return;
 		}
 		backDc = placeIdToAbbrev(CASTLE_DRACULA);
-		char backDcTran2[3];
-		strcpy(backDcTran2, backDc);
-		registerBestPlay(backDcTran2, "Stay alert");
+		registerBestPlay(backDc, "Stay alert");
 		return;
 	}
 
 	// check whether vampireNow is in currPlace
 	if (vampireNow == currPlace) {
-		const char *resultVamCurr = placeIdToAbbrev(currPlace);
-		char resultVamCurrTran[3];
-		strcpy(resultVamCurrTran, resultVamCurr);
-		registerBestPlay(resultVamCurrTran, "find vampire");
+		char *resultVamCurr = placeIdToAbbrev(currPlace);
+		registerBestPlay(resultVamCurr, "find vampire");
 		return;
 	}
 	if (vampireNow != CITY_UNKNOWN) {	
@@ -122,7 +114,7 @@ void decideHunterMove(HunterView hv)
 			destroyVam = PLAYER_MINA_HARKER;
 		}
 
-		const char *resultVamp;
+		char *resultVamp;
 		switch (destroyVam)
 		{
 		case PLAYER_DR_SEWARD:
@@ -142,9 +134,7 @@ void decideHunterMove(HunterView hv)
 		// moving if player is the one 
 
 		if (currPlayer == destroyVam) {
-			char resultVampTran[3];
-			strcpy(resultVampTran, resultVamp);
-			registerBestPlay(resultVampTran, "hunting vampire");
+			registerBestPlay(resultVamp, "hunting vampire");
 			return;
 		}
 	}
@@ -156,19 +146,15 @@ void decideHunterMove(HunterView hv)
 	if(lastKnow != -1 && (currRound-lastKnow) < 7) {
 		PlaceId *pathDra = HvGetShortestPathTo(hv,currPlayer, lastPlace, &pathDraNum);
 		PlaceId startone = checkMove(hv, pathDra[0]);
-		const char *resultDra = placeIdToAbbrev(startone);
-		char resultDraTran[3];
-		strcpy(resultDraTran, resultDra);
-		registerBestPlay(resultDraTran, "hunting Dracula");
+		char *resultDra = placeIdToAbbrev(startone);
+		registerBestPlay(resultDra, "hunting Dracula");
 		return;
 	}
 
 	//stay if  healthPoint < 3
 	if (healthPoint < 3) {
-		const char *resultDanger = placeIdToAbbrev(currPlace);
-		char resultDangerTran[3];
-		strcpy(resultDangerTran, resultDanger);
-		registerBestPlay(resultDangerTran, "resting");
+		char *resultDanger = placeIdToAbbrev(currPlace);
+		registerBestPlay(resultDanger, "resting");
 		return;
 	}
 
@@ -176,10 +162,8 @@ void decideHunterMove(HunterView hv)
 	Round lastMoveRound = -1;
 	PlaceId lastMove = HvGetLastKnownDraculaMove(hv, &lastMoveRound);
 	if (((lastMove >= DOUBLE_BACK_1) && (lastMove <= DOUBLE_BACK_5)) || lastMove == HIDE) {
-		const char *resultMove = placeIdToAbbrev(currPlace);
-		char resultMoveTran[3];
-		strcpy(resultMoveTran, resultMove);
-		registerBestPlay(resultMoveTran, "searching Dracula");
+		char *resultMove = placeIdToAbbrev(currPlace);
+		registerBestPlay(resultMove, "searching Dracula");
 		return;
 	} 
 
@@ -193,10 +177,8 @@ void decideHunterMove(HunterView hv)
 			break;
 		}
 	}
-	const char *resultdefault = placeIdToAbbrev(final);
-	char resultdefaultTran[3];
-	strcpy(resultdefaultTran, resultdefault);
-	registerBestPlay(resultdefaultTran, "default move");
+	char *resultdefault = placeIdToAbbrev(final);
+	registerBestPlay(resultdefault, "default move");
 	return;
 
 }
