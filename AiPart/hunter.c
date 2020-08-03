@@ -15,6 +15,9 @@
 #include <string.h>
 #include <stdio.h>
 
+// check valid move, if dest valid return dest, else return another place
+static PlaceId checkMove(HunterView hv, PlaceId dest);
+
 void decideHunterMove(HunterView hv)
 {
 	// set basic information
@@ -29,7 +32,7 @@ void decideHunterMove(HunterView hv)
 	PlaceId lastPlace = HvGetLastKnownDraculaLocation(hv, &lastKnow); 
 	//set four start corners
 	// we choose PLAYER_LORD_GODALMING to stay in CD
-	char **startPlace  = malloc(sizeof(char *)*4);
+	const char **startPlace  = malloc(sizeof(char *)*4);
 	startPlace[0] = "CD";
 	startPlace[1] = "NP";
 	startPlace[2] = "BR";
@@ -60,61 +63,80 @@ void decideHunterMove(HunterView hv)
 	}
 
 	// stay in the same place to do research for round 1 or vampireNow is unknow
-	if (currRound == 1 || vampireNow == CITY_UNKNOWN) {
+	if (currRound == 1 || (vampireNow == CITY_UNKNOWN && currRound%13 == 6)) {
 		const char *result = placeIdToAbbrev(currPlace);
-		char resultTran[3];
-		strcpy(resultTran, result);
-		registerBestPlay(resultTran, "searching vampire");
+		registerBestPlay(result, "searching vampire");
 		return;
 	}
- 
-
-	// choose one to destory the vampire except PLAYER_LORD_GODALMING
-	Player destroyVam = PLAYER_DR_SEWARD;
-	int numPathSmall = -1;
-	int numPathV = -1;
-	int numPathM = -1;
-
-	// get PLAYER_DR_SEWARD path length
-	PlaceId *pathVamD = HvGetShortestPathTo(hv,PLAYER_DR_SEWARD, vampireNow, &numPathSmall);
-	PlaceId *pathVamV = HvGetShortestPathTo(hv,PLAYER_VAN_HELSING, vampireNow, &numPathV);
-	PlaceId *pathVamM = HvGetShortestPathTo(hv,PLAYER_MINA_HARKER, vampireNow, &numPathM);
 	
-	// choose the player
-	if (numPathSmall > numPathV) {
-		numPathSmall = numPathV;
-		destroyVam = PLAYER_VAN_HELSING;
-	}
-
-	if (numPathSmall > numPathM) {
-		numPathSmall = numPathM;
-		destroyVam = PLAYER_MINA_HARKER;
-	}
-
-	const char *resultVamp;
-	switch (destroyVam)
-	{
-	case PLAYER_DR_SEWARD:
-		resultVamp = placeIdToAbbrev(pathVamD[0]);
-		break;
-	case PLAYER_VAN_HELSING:
-		resultVamp = placeIdToAbbrev(pathVamV[0]);
-		break;
-	case PLAYER_MINA_HARKER:
-		resultVamp = placeIdToAbbrev(pathVamM[0]);
-		break;
-	
-	default:
-		break;
-	}
-
-	// moving if player is the one 
-
-	if (currPlayer == destroyVam) {
-		char resultVamTran[3];
-		strcpy(resultVamTran, resultVamp);
-		registerBestPlay(resultVamTran, "hunting vampire");
+	// PLAYER_LORD_GODALMING should always stay in DC
+	if (currPlayer == PLAYER_LORD_GODALMING) {
+		// make sure he is in DC
+		const char *backDc;
+		if (currPlace != CASTLE_DRACULA) {
+			int numBackDc = -1;
+			PlaceId *pathDc = HvGetShortestPathTo(hv,PLAYER_LORD_GODALMING, CASTLE_DRACULA, &numBackDc);
+			backDc = placeIdToAbbrev(pathDc[0]);
+			registerBestPlay(backDc, "Go back castle");
+			return;
+		}
+		backDc = placeIdToAbbrev(CASTLE_DRACULA);
+		registerBestPlay(backDc, "Stay alert");
 		return;
+	}
+
+	// check whether vampireNow is in currPlace
+	if (vampireNow == currPlace) {
+		const char *resultVamCurr = placeIdToAbbrev(currPlace);
+		registerBestPlay(resultVamCurr, "find vampire");
+		return;
+	}
+	if (vampireNow != CITY_UNKNOWN) {	
+		// choose one to destory the vampire except PLAYER_LORD_GODALMING
+		Player destroyVam = PLAYER_DR_SEWARD;
+		int numPathSmall = -1;
+		int numPathV = -1;
+		int numPathM = -1;
+
+		// get PLAYER_DR_SEWARD path length
+		PlaceId *pathVamD = HvGetShortestPathTo(hv,PLAYER_DR_SEWARD, vampireNow, &numPathSmall);
+		PlaceId *pathVamV = HvGetShortestPathTo(hv,PLAYER_VAN_HELSING, vampireNow, &numPathV);
+		PlaceId *pathVamM = HvGetShortestPathTo(hv,PLAYER_MINA_HARKER, vampireNow, &numPathM);
+		
+		// choose the player
+		if (numPathSmall > numPathV) {
+			numPathSmall = numPathV;
+			destroyVam = PLAYER_VAN_HELSING;
+		}
+
+		if (numPathSmall > numPathM) {
+			numPathSmall = numPathM;
+			destroyVam = PLAYER_MINA_HARKER;
+		}
+
+		const char *resultVamp;
+		switch (destroyVam)
+		{
+		case PLAYER_DR_SEWARD:
+			resultVamp = placeIdToAbbrev(pathVamD[0]);
+			break;
+		case PLAYER_VAN_HELSING:
+			resultVamp = placeIdToAbbrev(pathVamV[0]);
+			break;
+		case PLAYER_MINA_HARKER:
+			resultVamp = placeIdToAbbrev(pathVamM[0]);
+			break;
+		
+		default:
+			break;
+		}
+
+		// moving if player is the one 
+
+		if (currPlayer == destroyVam) {
+			registerBestPlay(resultVamp, "hunting vampire");
+			return;
+		}
 	}
 
 	// check Dracula loaction
@@ -123,19 +145,16 @@ void decideHunterMove(HunterView hv)
 	int pathDraNum = -1;
 	if(lastKnow != -1 && (currRound-lastKnow) < 7) {
 		PlaceId *pathDra = HvGetShortestPathTo(hv,currPlayer, lastPlace, &pathDraNum);
-		const char *resultDra = placeIdToAbbrev(pathDra[0]);
-		char resultDraTran[3];
-		strcpy(resultDraTran, resultDra);
-		registerBestPlay(resultDraTran, "hunting Dracula");
+		PlaceId startone = checkMove(hv, pathDra[0]);
+		const char *resultDra = placeIdToAbbrev(startone);
+		registerBestPlay(resultDra, "hunting Dracula");
 		return;
 	}
 
 	//stay if  healthPoint < 3
 	if (healthPoint < 3) {
 		const char *resultDanger = placeIdToAbbrev(currPlace);
-		char resultDanTran[3];
-		strcpy(resultDanTran, resultDanger);
-		registerBestPlay(resultDanTran, "resting");
+		registerBestPlay(resultDanger, "resting");
 		return;
 	}
 
@@ -144,9 +163,7 @@ void decideHunterMove(HunterView hv)
 	PlaceId lastMove = HvGetLastKnownDraculaMove(hv, &lastMoveRound);
 	if ((lastMove >= DOUBLE_BACK_1) && (lastMove <= DOUBLE_BACK_5)) {
 		const char *resultMove = placeIdToAbbrev(currPlace);
-		char resultMoveTran[3];
-		strcpy(resultMoveTran, resultMove);
-		registerBestPlay(resultMoveTran, "searching Dracula");
+		registerBestPlay(resultMove, "searching Dracula");
 		return;
 	} 
 
@@ -161,9 +178,27 @@ void decideHunterMove(HunterView hv)
 		}
 	}
 	const char *resultdefault = placeIdToAbbrev(final);
-	char resultDefTran[3];
-	strcpy(resultDefTran, resultdefault);
-	registerBestPlay(resultDefTran, "default move");
+	registerBestPlay(resultdefault, "default move");
 	return;
 
+}
+
+
+// check valid move, if dest valid return dest, else return another place
+static PlaceId checkMove(HunterView hv, PlaceId dest) {
+	int defaultNum = -1;
+	PlaceId *defaultPlace = HvWhereCanIGo(hv, &defaultNum);
+	Player currPlayer = HvGetPlayer(hv);
+	PlaceId currPlace = HvGetPlayerLocation(hv, currPlayer);
+	PlaceId final;
+	for (int i = 0; i < defaultNum; i++) {
+		// place reachable
+		if (defaultPlace[i] == dest) {
+			return dest;
+		}
+		if (defaultPlace[i] != currPlace) {
+			final = defaultPlace[i];
+		}
+	}
+	return final;
 }
