@@ -70,7 +70,6 @@ void decideDraculaMove(DraculaView dv)
 				continue;
 			}
 			int furthestDist = -1;
-
 			int pathLength = -1;
 			GetShortestPathLength(dv, locG, i, &pathLength);
 			if (pathLength > furthestDist) {
