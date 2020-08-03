@@ -158,10 +158,10 @@ void decideHunterMove(HunterView hv)
 		return;
 	}
 
-	// if dracula use double back, it probably nears one of the hunter
+	// if dracula use double back or hide, it probably nears one of the hunter
 	Round lastMoveRound = -1;
 	PlaceId lastMove = HvGetLastKnownDraculaMove(hv, &lastMoveRound);
-	if ((lastMove >= DOUBLE_BACK_1) && (lastMove <= DOUBLE_BACK_5)) {
+	if (((lastMove >= DOUBLE_BACK_1) && (lastMove <= DOUBLE_BACK_5)) || lastMove == HIDE) {
 		const char *resultMove = placeIdToAbbrev(currPlace);
 		registerBestPlay(resultMove, "searching Dracula");
 		return;
