@@ -91,7 +91,7 @@ void decideHunterMove(HunterView hv)
 		registerBestPlay(resultVamCurr, "find vampire");
 		return;
 	}
-	if (vampireNow != CITY_UNKNOWN) {	
+	if (vampireNow != CITY_UNKNOWN && vampireNow != SEA_UNKNOWN && vampireNow != NOWHERE) {	
 		// choose one to destory the vampire except PLAYER_LORD_GODALMING
 		Player destroyVam = PLAYER_DR_SEWARD;
 		int numPathSmall = -1;
@@ -115,6 +115,7 @@ void decideHunterMove(HunterView hv)
 		}
 
 		char *resultVamp;
+
 		switch (destroyVam)
 		{
 		case PLAYER_DR_SEWARD:
