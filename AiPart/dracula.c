@@ -51,56 +51,118 @@ int MYROAD = 1;
 
 void decideDraculaMove(DraculaView dv)
 {
-	// TODO: Replace this with something better!
-	Round round = DvGetRound(dv);
-	int health = DvGetHealth(dv, PLAYER_DRACULA);
-	// Dracula's next move
+	// // TODO: Replace this with something better!
+	// Round round = DvGetRound(dv);
+	// int health = DvGetHealth(dv, PLAYER_DRACULA);
+	// // Dracula's next move
+	// PlaceId move;
+	// char move_name[3];
+	// // If round 0,
+	// // loop through all valid locations
+	// // excluding sea locations and hopsital
+	// if (round == 0) {
+	// 	int furthestDist = -1;
+	// 	for (PlaceId i = MIN_REAL_PLACE; i <= MAX_REAL_PLACE; i++) {
+	// 		// skip if sea locations and hospital
+	// 		if (i == HOSPITAL_PLACE || placeIdToType(i) == SEA) {
+	// 			continue;
+	// 		}
+	// 		if (i % 5 == 0 || i % 5 == 1 || i % 5 == 3 || i % 5 == 4) {
+	// 			continue;
+	// 		}
+	// 		for (Player hunter = PLAYER_LORD_GODALMING; hunter < PLAYER_DRACULA; hunter++){
+	// 			// PlaceId hloc = DvGetPlayerLocation(dv, hunter);
+	// 			// const char *name = placeIdToName(hloc);
+	// 			// printf("%s\n", name);
+	// 			int pathLength = -1;
+	// 			PlaceId locHunter = DvGetPlayerLocation(dv, hunter);
+	// 			GetShortestPathLength(dv, locHunter, i, &pathLength);
+	// 			// printf("%d\n", pathLength);
+	// 			if (pathLength > furthestDist) {
+	// 				move = i;
+	// 				furthestDist = pathLength;
+	// 			}
+	// 			else if (pathLength == furthestDist) {
+	// 				// check loc's distance from Munich
+	// 				int distFromMunich_1 = -1;
+	// 				GetShortestPathLength(dv, i, MUNICH, &distFromMunich_1);
+	// 				int distFromMunich_2 = -1;
+	// 				GetShortestPathLength(dv, move, MUNICH, &distFromMunich_2);
+	// 				if (distFromMunich_1 < distFromMunich_2) move = i;
+	// 			}
+	// 		}
+	// 		// printf("move: %d\n", move);
+	// 	}
+	// 	strcpy(move_name, placeIdToAbbrev(move));
+	// 	registerBestPlay(move_name, "Mwahahahaha");
+	// 	return;
+	// }
+
+	// // if not round 0
+	// int numReturnedLocs = 0;
+	// PlaceId *reachableLocs = DvGetValidMoves(dv, &numReturnedLocs);
+	// if (numReturnedLocs == 0) {
+	// 	move = placeAbbrevToId("TP");
+	// 	strcpy(move_name, placeIdToAbbrev(move));
+	// 	registerBestPlay(move_name, "Mwahahahaha");
+	// 	return;
+	// }
+
+	// // Dracula returning to CD if his health is low 
+	// if (health < 15) {
+	// 	int shortestDist = -1;
+	// 	for (int i = 0; reachableLocs[i] < numReturnedLocs; i++) {
+	// 		int distfromCD = -1;
+	// 		GetShortestPathLength(dv, reachableLocs[i], CASTLE_DRACULA, &distfromCD);
+	// 		if (distfromCD < shortestDist) {
+	// 			move = reachableLocs[i];
+	// 		}
+	// 	}
+	// 	strcpy(move_name, placeIdToAbbrev(move));
+	// 	registerBestPlay(move_name, "Mwahahahaha");
+	// 	return;
+	// }
+
+	// if (reachableLocs != NULL) {
+	// 	int furthestDis = -1;
+	// 	for (int i = 0; i < numReturnedLocs; i++) {
+	// 		int pathLength = -1;
+	// 		for (Player hunter = PLAYER_LORD_GODALMING; hunter < PLAYER_DRACULA; hunter++){
+	// 			GetShortestPathLength(dv, hunter, i, &pathLength);
+	// 			if (pathLength > furthestDis) {
+	// 				move = reachableLocs[i];
+	// 				pathLength = furthestDis;
+	// 			}
+	// 			else if (pathLength == furthestDis) {
+	// 				// check loc's distance from Munich
+	// 				int distFromMunich_1 = -1;
+	// 				GetShortestPathLength(dv, reachableLocs[i], MUNICH, &distFromMunich_1);
+	// 				int distFromMunich_2 = -1;
+	// 				GetShortestPathLength(dv, move, MUNICH, &distFromMunich_2);
+	// 				if (distFromMunich_1 < distFromMunich_2) move = reachableLocs[i];
+	// 			}
+	// 		}
+	// 	}
+	// } 
+
+	// free(reachableLocs);
+	// strcpy(move_name, placeIdToAbbrev(move));
+	// registerBestPlay(move_name, "Mwahahahaha");
+	
 	PlaceId move;
 	char move_name[3];
-	// If round 0,
-	// loop through all valid locations
-	// excluding sea locations and hopsital
-	if (round == 0) {
-		int furthestDist = -1;
-		for (PlaceId i = MIN_REAL_PLACE; i <= MAX_REAL_PLACE; i++) {
-			// skip if sea locations and hospital
-			if (i == HOSPITAL_PLACE || placeIdToType(i) == SEA) {
-				continue;
-			}
-			if (i % 5 == 0 || i % 5 == 1 || i % 5 == 3 || i % 5 == 4) {
-				continue;
-			}
-			for (Player hunter = PLAYER_LORD_GODALMING; hunter < PLAYER_DRACULA; hunter++){
-				// PlaceId hloc = DvGetPlayerLocation(dv, hunter);
-				// const char *name = placeIdToName(hloc);
-				// printf("%s\n", name);
-				int pathLength = -1;
-				PlaceId locHunter = DvGetPlayerLocation(dv, hunter);
-				GetShortestPathLength(dv, locHunter, i, &pathLength);
-				// printf("%d\n", pathLength);
-				if (pathLength > furthestDist) {
-					move = i;
-					furthestDist = pathLength;
-				}
-				else if (pathLength == furthestDist) {
-					// check loc's distance from Munich
-					int distFromMunich_1 = -1;
-					GetShortestPathLength(dv, i, MUNICH, &distFromMunich_1);
-					int distFromMunich_2 = -1;
-					GetShortestPathLength(dv, move, MUNICH, &distFromMunich_2);
-					if (distFromMunich_1 < distFromMunich_2) move = i;
-				}
-			}
-			// printf("move: %d\n", move);
-		}
-		strcpy(move_name, placeIdToAbbrev(move));
+
+	// if round 0
+	if (DvGetRound(dv) == 0) {
+		strcpy(move_name, "CD");
 		registerBestPlay(move_name, "Mwahahahaha");
 		return;
 	}
 
-	// if not round 0
 	int numReturnedLocs = 0;
 	PlaceId *reachableLocs = DvGetValidMoves(dv, &numReturnedLocs);
+
+	// if no valid moves
 	if (numReturnedLocs == 0) {
 		move = placeAbbrevToId("TP");
 		strcpy(move_name, placeIdToAbbrev(move));
@@ -108,8 +170,8 @@ void decideDraculaMove(DraculaView dv)
 		return;
 	}
 
-	// Dracula returning to CD if his health is low 
-	if (health < 15) {
+	// if Dracula is on low leath
+	if (DvGetHealth(dv, PLAYER_DRACULA) < 15) {
 		int shortestDist = -1;
 		for (int i = 0; reachableLocs[i] < numReturnedLocs; i++) {
 			int distfromCD = -1;
@@ -123,31 +185,11 @@ void decideDraculaMove(DraculaView dv)
 		return;
 	}
 
-	if (reachableLocs != NULL) {
-		int furthestDis = -1;
-		for (int i = 0; i < numReturnedLocs; i++) {
-			int pathLength = -1;
-			for (Player hunter = PLAYER_LORD_GODALMING; hunter < PLAYER_DRACULA; hunter++){
-				GetShortestPathLength(dv, hunter, i, &pathLength);
-				if (pathLength > furthestDis) {
-					move = reachableLocs[i];
-					pathLength = furthestDis;
-				}
-				else if (pathLength == furthestDis) {
-					// check loc's distance from Munich
-					int distFromMunich_1 = -1;
-					GetShortestPathLength(dv, reachableLocs[i], MUNICH, &distFromMunich_1);
-					int distFromMunich_2 = -1;
-					GetShortestPathLength(dv, move, MUNICH, &distFromMunich_2);
-					if (distFromMunich_1 < distFromMunich_2) move = reachableLocs[i];
-				}
-			}
-		}
-	} 
-
+	// if there are valid moves
+	strcpy(move_name, placeIdToAbbrev(reachableLocs[1]));
 	free(reachableLocs);
-	strcpy(move_name, placeIdToAbbrev(move));
-	registerBestPlay(move_name, "Mwahahahaha");
+	registerBestPlay(move_name, "Mwahahahaha");	
+	return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void GetShortestPathLength(DraculaView dv, PlaceId src, PlaceId dest,
@@ -167,7 +209,7 @@ void GetShortestPathLength(DraculaView dv, PlaceId src, PlaceId dest,
 	placeList->round = DvGetRound(dv);
 	placeList->totalNum = 0;
 	placeList->player = PLAYER_DRACULA;
-	placeList->railNum = (PLAYER_DRACULA + placeList->round)%4;
+	placeList->railNum = 0;
 	placeList->start = startId;
 	MYBOAT = 1;
 	MYRAIL = 1;
@@ -253,7 +295,7 @@ static void cleanplaceLis(ShortestPath placeList) {
 
 // check two place conected
 static bool connectCheck(DraculaView dv, ShortestPath placeList, PlaceId src, PlaceId dest, int *levelRecord) {
-	placeList->railNum = (levelRecord[src] + placeList->player)%4;
+	placeList->railNum = 0;
 	// check road and sea
 	placeList->start = src;
 	// int originRail = placeList->railNum;
