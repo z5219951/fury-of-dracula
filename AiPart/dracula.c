@@ -186,7 +186,12 @@ void decideDraculaMove(DraculaView dv)
 	}
 
 	// if there are valid moves
-	strcpy(move_name, placeIdToAbbrev(reachableLocs[1]));
+	if (numReturnedLocs == 1) {
+		strcpy(move_name, placeIdToAbbrev(reachableLocs[0]));
+	}
+	else {
+		strcpy(move_name, placeIdToAbbrev(reachableLocs[1]));
+	}
 	free(reachableLocs);
 	registerBestPlay(move_name, "Mwahahahaha");	
 	return;
