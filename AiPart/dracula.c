@@ -155,7 +155,7 @@ void decideDraculaMove(DraculaView dv)
 	// if round 0
 	if (DvGetRound(dv) == 0) {
 		strcpy(move_name, "CD");
-		registerBestPlay(move_name, "Mwahahahaha");
+		registerBestPlay(move_name, "1");
 		return;
 	}
 
@@ -166,22 +166,23 @@ void decideDraculaMove(DraculaView dv)
 	if (numReturnedLocs == 0) {
 		move = placeAbbrevToId("TP");
 		strcpy(move_name, placeIdToAbbrev(move));
-		registerBestPlay(move_name, "Mwahahahaha");
+		registerBestPlay(move_name, "2");
 		return;
 	}
 
-		// if Dracula is on low health
+	// if Dracula is on low health
 	if (DvGetHealth(dv, PLAYER_DRACULA) < 15) {
 		int shortestDist = 100;
-		for (int i = 0; reachableLocs[i] < numReturnedLocs; i++) {
+		for (int i = 0; i < numReturnedLocs; i++) {
 			int distfromCD = -1;
 			GetShortestPathLength(dv, reachableLocs[i], CASTLE_DRACULA, &distfromCD);
 			if (distfromCD < shortestDist) {
 				move = reachableLocs[i];
+				shortestDist = distfromCD;
 			}
 		}
 		strcpy(move_name, placeIdToAbbrev(move));
-		registerBestPlay(move_name, "Mwahahahaha");
+		registerBestPlay(move_name, "3");
 		return;
 	}
 
@@ -193,7 +194,7 @@ void decideDraculaMove(DraculaView dv)
 		strcpy(move_name, placeIdToAbbrev(reachableLocs[1]));
 	}
 	free(reachableLocs);
-	registerBestPlay(move_name, "Mwahahahaha");	
+	registerBestPlay(move_name, "4");	
 	return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
