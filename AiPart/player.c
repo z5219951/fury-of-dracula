@@ -78,14 +78,18 @@ typedef HunterView View;
 
 int main(void)
 {
-	char *pastPlays = xPastPlays;
-	Message msgs[] = xMsgs;
-
-	View state = ViewNew(pastPlays, msgs);
-	decideMove(state);
-	ViewFree(state);
-
-	printf("Move: %s, Message: %s\n", latestPlay, latestMessage);
+	FILE *input = fopen("test.in", "r");
+	char *pastPlays;
+		size_t len = 0;
+		while(getline(&pastPlays, &len, input) != -1) {
+	//char *pastPlays = xPastPlays;
+		Message msgs[] = xMsgs;
+		View state = ViewNew(pastPlays, msgs);
+		decideMove(state);
+		ViewFree(state);
+		//checkmove(pastPlays, latestPlay);
+		printf("Move: %s, Message: %s\n", latestPlay, latestMessage);
+	}
 	return EXIT_SUCCESS;
 }
 
