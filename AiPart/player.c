@@ -60,7 +60,7 @@ typedef DraculaView View;
 # define decideMove decideDraculaMove
 # define ViewFree DvFree
 
-# define xPastPlays "GZA.... SED.... HZU.... MZU...."
+# define xPastPlays "GST.... SSR.... HBC.... MCD.... DCD.V.. GFR.... SBO.... HGA.... MKL.... DKLT... GBR.... SMR.... HKLTD.. MGA.... DBCT... GBD.... SGO.... HSZ.... MKL.... DCNT... GKL.... SVE.... HKL.... MCDV... DGAT... GGATD.. SBD.... HGAD... MGAD..."
 # define xMsgs { "", "", "", "" }
 
 #else
@@ -78,14 +78,18 @@ typedef HunterView View;
 
 int main(void)
 {
-	char *pastPlays = xPastPlays;
-	Message msgs[] = xMsgs;
-
-	View state = ViewNew(pastPlays, msgs);
-	decideMove(state);
-	ViewFree(state);
-
-	printf("Move: %s, Message: %s\n", latestPlay, latestMessage);
+	FILE *input = fopen("test.in", "r");
+	char *pastPlays;
+		size_t len = 0;
+		while(getline(&pastPlays, &len, input) != -1) {
+	//char *pastPlays = xPastPlays;
+		Message msgs[] = xMsgs;
+		View state = ViewNew(pastPlays, msgs);
+		decideMove(state);
+		ViewFree(state);
+		//checkmove(pastPlays, latestPlay);
+		printf("Move: %s, Message: %s\n", latestPlay, latestMessage);
+	}
 	return EXIT_SUCCESS;
 }
 

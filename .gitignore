@@ -67,3 +67,6 @@ sallytest*
 # ignore Ai part file
 dracula
 hunter
+test.in
+test.out
+test.txt
