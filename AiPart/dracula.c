@@ -170,9 +170,9 @@ void decideDraculaMove(DraculaView dv)
 		return;
 	}
 
-	// if Dracula is on low leath
+		// if Dracula is on low health
 	if (DvGetHealth(dv, PLAYER_DRACULA) < 15) {
-		int shortestDist = -1;
+		int shortestDist = 100;
 		for (int i = 0; reachableLocs[i] < numReturnedLocs; i++) {
 			int distfromCD = -1;
 			GetShortestPathLength(dv, reachableLocs[i], CASTLE_DRACULA, &distfromCD);
