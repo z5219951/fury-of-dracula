@@ -79,10 +79,12 @@ typedef HunterView View;
 int main(void)
 {
 	FILE *input = fopen("test.in", "r");
+		//FILE *out = fopen("test.out","w");
 	char *pastPlays;
 		size_t len = 0;
 		while(getline(&pastPlays, &len, input) != -1) {
 	//char *pastPlays = xPastPlays;
+		//fprintf(out, "%s\n", pastPlays);
 		Message msgs[] = xMsgs;
 		View state = ViewNew(pastPlays, msgs);
 		decideMove(state);

@@ -402,7 +402,6 @@ PlaceId *hunterBfs(DraculaView dv, Player hunter, PlaceId src, Round r) {
 		int numReachable = 0;
 		PlaceId *reachable = GvGetReachable(dv->gv, hunter, r, curr,
 		                                    &numReachable);
-
 		for (int i = 0; i < numReachable; i++) {
 			if (pred[reachable[i]] == -1) {
 				pred[reachable[i]] = curr;
@@ -427,10 +426,10 @@ PlaceId *hunterBfs(DraculaView dv, Player hunter, PlaceId src, Round r) {
 PlaceId *GetShortestPathLength(DraculaView dv,  PlaceId src, PlaceId dest,
                              int *pathLength, bool boat)
 {
-	bool canfree = false;
-	int num_move = 0;
-	GvGetLastLocations(dv->gv, PLAYER_DRACULA, 0,
-                            &num_move, &canfree);
+	if (src == dest) {
+		pathLength = 0;
+		return NULL;
+	}
 	Round r = DvGetRound(dv) + 1;
 	PlaceId *pred = PathBfs(dv,src, dest,r, boat);
 
@@ -467,7 +466,7 @@ PlaceId *PathBfs(DraculaView dv, PlaceId src, PlaceId dest, Round r, bool boat) 
 	if (step > 5) step = 5;
 	bool canfree = false;
 	int num_move = 0;
-	PlaceId *history = GvGetLastLocations(dv->gv, PLAYER_DRACULA, 0,
+	PlaceId *history = GvGetLastLocations(dv->gv, PLAYER_DRACULA, 5,
                             &num_move, &canfree);
 	for (int j  = 0; j < num_move; j++) {
 		pred[history[j]] = history[j];
@@ -479,7 +478,7 @@ PlaceId *PathBfs(DraculaView dv, PlaceId src, PlaceId dest, Round r, bool boat) 
 	while (!(QueueIsEmpty(q1) && QueueIsEmpty(q2))) {
 		PlaceId curr = QueueDequeue(q1);
 		int numReachable = 0;
-		PlaceId *reachable = GvGetReachableByType(dv->gv, PLAYER_DRACULA, r, curr, true, boat, true
+		PlaceId *reachable = GvGetReachableByType(dv->gv, PLAYER_DRACULA, r, curr, true, false, boat
 		                                    ,&numReachable);
 		for (int i = 0; i < numReachable; i++) {
 			if (pred[reachable[i]] == -1) {
@@ -503,10 +502,11 @@ PlaceId *PathBfs(DraculaView dv, PlaceId src, PlaceId dest, Round r, bool boat) 
 	return pred;
 }
 PlaceId DraculaMove(DraculaView dv, PlaceId move) {
-	return GvDraculaMove(dv->gv, move);
+	if (placeIsReal(move)) return move;
+	else return GvDraculaMove(dv->gv, move);
 }
 PlaceId *DvGetLastLocations(DraculaView dv, Player player,
                             int *numReturnedLocs, bool *canFree) {
 			return GvGetLastLocations(dv->gv, PLAYER_DRACULA, 5,
-                        	numReturnedLocs, false);
+                        	numReturnedLocs, canFree);
 }
