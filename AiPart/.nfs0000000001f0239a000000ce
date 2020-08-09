@@ -1,0 +1,19 @@
+[0;36mCreated a temp directory '/tmp/tmp.mh9yd8A0Yp' for checking your submission[0m
+[0;36mCopying your files into '/tmp/tmp.mh9yd8A0Yp'[0m
+[0;36mChecking that your submission includes all the required files[0m
+[0;36mChecking that your submission does NOT include files that shouldn't be modified[0m
+[0;36mCopying our versions of files that shouldn't be modified into '/tmp/tmp.mh9yd8A0Yp'[0m
+[0;36mCopying in the remaining files that you weren't required to modify or submit[0m
+[0;36mCheck your Makefile for 'LIBS'[0m
+[0;36mChecking that your code compiles[0m
+gcc -Wall -Werror   -c -o dracula.o dracula.c
+gcc -Wall -Werror -DI_AM_DRACULA -c player.c -o playerDracula.o
+gcc -Wall -Werror   -c -o DraculaView.o DraculaView.c
+gcc -Wall -Werror   -c -o GameView.o GameView.c
+gcc -Wall -Werror   -c -o Map.o Map.c
+gcc -Wall -Werror   -c -o Places.o Places.c
+gcc -Wall -Werror   -c -o Queue.o Queue.c
+gcc -Wall -Werror   -c -o utils.o utils.c
+gcc   dracula.o playerDracula.o DraculaView.o GameView.o Map.o Places.o Queue.o utils.o   -o dracula
+gcc -Wall -Werror   -c -o hunter.o hunter.c
+gcc -Wall -Werror -c player.c -o playerHunter.o
