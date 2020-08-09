@@ -50,8 +50,16 @@ void decideDraculaMove(DraculaView dv)
 	char move_name[3];
 	// if round 0
 	if (DvGetRound(dv) == 0) {
-		strcpy(move_name, "CD");
-		registerBestPlay(move_name, "1");
+		PlaceId rplace = placeAbbrevToId("CD");
+		if (hunterhere(dv, CASTLE_DRACULA) != 0) {
+			srand(time(0));
+			PlaceId rplace = MIN_REAL_PLACE + rand() % MAX_REAL_PLACE;
+			while (rplace == HOSPITAL_PLACE
+			|| rplace == CASTLE_DRACULA)
+			rplace = rand() % MAX_REAL_PLACE;
+		}
+		strcpy(move_name, placeIdToAbbrev(rplace));
+		registerBestPlay(move_name, "Let darkness be parted!");
 		return;
 	}
 	int numMove= 0;

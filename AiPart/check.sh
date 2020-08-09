@@ -17,5 +17,5 @@ do
         echo "The File Win!"
         exit 0
     fi
-    tail -2 test.txt
+    tail -5 test.txt
 done
